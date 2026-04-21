@@ -267,26 +267,68 @@ function append(id, text) {
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function parseRetrySeconds(body) {
-  const m = body.match(/try again in ([\d.]+)s/i);
-  // Always wait at least 65s so the 60s rolling TPM window fully resets
-  return Math.max(m ? Math.ceil(parseFloat(m[1])) + 2 : 65, 65);
+  // Handles "22m10.56s", "1h5m3s", plain "38.7s"
+  let secs = 0;
+  const h = body.match(/(\d+)h/i);
+  const m = body.match(/(\d+)m/i);
+  const s = body.match(/([\d.]+)s/i);
+  if (h) secs += parseInt(h[1]) * 3600;
+  if (m) secs += parseInt(m[1]) * 60;
+  if (s) secs += parseFloat(s[1]);
+  // Add a 5s buffer; floor at 65s for TPM limits
+  return secs > 0 ? Math.ceil(secs) + 5 : 65;
 }
 
+const MODELS = ['llama-3.3-70b-versatile', 'meta-llama/llama-4-scout-17b-16e-instruct', 'llama-3.1-8b-instant'];
+let modelIndex = 0;  // tracks which model is active across all calls
+
 async function callClaude(messages, onChunk) {
-  for (let attempt = 0; attempt < 8; attempt++) {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const model = MODELS[modelIndex];
     const res = await fetch('/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'llama-3.3-70b-versatile', max_tokens: 4000, messages })
+      body: JSON.stringify({ model, max_tokens: 4000, messages })
     });
 
-    if (res.status === 429) {
+    // 400 decommissioned — switch model immediately
+    if (res.status === 400) {
       const body = await res.text();
-      const wait = parseRetrySeconds(body);
+      if (body.includes('decommissioned') && modelIndex < MODELS.length - 1) {
+        modelIndex++;
+        const fallback = MODELS[modelIndex];
+        onChunk(`\n⚡ ${model} decommissioned — switching to ${fallback}\n`);
+        const badge = document.querySelector('.step-card.running .step-badge');
+        if (badge) badge.innerHTML = `<span class="spinner"></span>Switching…`;
+        continue;
+      }
+      throw new Error(`API 400: ${body}`);
+    }
+
+    if (res.status === 429 || res.status === 413) {
+      const body    = await res.text();
+      const isDaily = body.includes('TPD') || body.includes('per day');
+      const badge   = document.querySelector('.step-card.running .step-badge');
+
+      // Daily limit or request too large — try fallback model first
+      if ((isDaily || res.status === 413) && modelIndex < MODELS.length - 1) {
+        modelIndex++;
+        const fallback = MODELS[modelIndex];
+        onChunk(`\n⚡ Switching to ${fallback}\n`);
+        if (badge) badge.innerHTML = `<span class="spinner"></span>Switching model…`;
+        continue;
+      }
+
+      // TPM limit (or no fallback left) — wait and retry
+      const wait  = parseRetrySeconds(body);
+      const label = isDaily ? 'Daily limit' : 'Rate limited';
       for (let s = wait; s > 0; s--) {
-        onChunk(`\r⏳ Rate limited — retrying in ${s}s…`);
+        const display = s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`;
+        if (badge) badge.innerHTML = `⏳ ${display}`;
+        onChunk(`\r⏳ ${label} — retrying in ${display}…`);
         await sleep(1000);
       }
+      if (badge) badge.innerHTML = `<span class="spinner"></span>Retrying…`;
       onChunk('\n');
       continue;
     }
@@ -478,6 +520,11 @@ ${jd}`;
 
 // ── Pipeline ─────────────────────────────────────────────────────────────────
 
+const STEP_IDS = ['risen', 'xyz', 'keyword-gap', 'car', 'recruiter'];
+
+// Persists between runs so retry can resume mid-pipeline
+let _state = { safeResume: '', voice: '', jd: '', inputs: {} };
+
 async function runPipeline() {
   const resume = getResumeText();
   const voice  = voiceEl.value.trim();
@@ -486,68 +533,103 @@ async function runPipeline() {
   if (!resume) { alert('Please upload a resume or paste your resume text.'); return; }
   if (!jd)     { alert('Please paste the job description.'); return; }
 
+  modelIndex = 0;
+  buildUI();
+
+  const safeResume = redact(resume);
+  _state = { safeResume, voice, jd, inputs: {} };
+
+  await _execute(0, safeResume);
+}
+
+async function retryFromStep(id) {
+  const startIdx = STEP_IDS.indexOf(id);
+  if (startIdx < 0 || !_state.inputs[id]) return;
+
+  // Reset this step and every step after it
+  for (let i = startIdx; i < STEP_IDS.length; i++) {
+    const sid  = STEP_IDS[i];
+    const card = document.getElementById(`step-${sid}`);
+    card.className = 'step-card';
+    document.getElementById(`badge-${sid}`).textContent = 'Waiting';
+    document.getElementById(`out-${sid}`).textContent = '';
+  }
+  document.querySelector('.final-card')?.remove();
+  modelIndex = 0;
+
+  await _execute(startIdx, _state.inputs[id]);
+}
+
+async function _execute(startIdx, initialCur) {
+  const { safeResume, voice, jd } = _state;
   const btn = document.getElementById('runBtn');
   btn.disabled = true;
   btn.textContent = 'Running…';
 
-  buildUI();
-
-  // Redact personal info before anything leaves the browser
-  const safeResume = redact(resume);
-  let cur = safeResume;
+  let cur = initialCur;
 
   try {
-    // 1 — RISEN
-    setStatus('risen', 'running');
-    cur = extractResume(await callClaude(
-      [{ role: 'user', content: pRisen(safeResume, voice, jd) }],
-      t => append('risen', t)
-    ));
-    setStatus('risen', 'done');
+    if (startIdx <= 0) {
+      _state.inputs['risen'] = cur;
+      setStatus('risen', 'running');
+      cur = extractResume(await callClaude(
+        [{ role: 'user', content: pRisen(safeResume, voice, jd) }],
+        t => append('risen', t)
+      ));
+      setStatus('risen', 'done');
+    }
 
-    // 2 — XYZ
-    setStatus('xyz', 'running');
-    cur = extractResume(await callClaude(
-      [{ role: 'user', content: pXyz(cur, jd) }],
-      t => append('xyz', t)
-    ));
-    setStatus('xyz', 'done');
+    if (startIdx <= 1) {
+      _state.inputs['xyz'] = cur;
+      setStatus('xyz', 'running');
+      cur = extractResume(await callClaude(
+        [{ role: 'user', content: pXyz(cur, jd) }],
+        t => append('xyz', t)
+      ));
+      setStatus('xyz', 'done');
+    }
 
-    // 3 — Keyword Gap (audit then fill, small pause between the two back-to-back calls)
-    setStatus('keyword-gap', 'running');
-    const audit = await callClaude(
-      [{ role: 'user', content: pKeywordAudit(safeResume, cur, jd) }],
-      t => append('keyword-gap', t)
-    );
-    append('keyword-gap', '\n\n── Rewriting with gap findings ──\n\n');
-    await sleep(3000);
-    cur = extractResume(await callClaude(
-      [{ role: 'user', content: pKeywordFill(cur, audit) }],
-      t => append('keyword-gap', t)
-    ));
-    setStatus('keyword-gap', 'done');
+    if (startIdx <= 2) {
+      _state.inputs['keyword-gap'] = cur;
+      setStatus('keyword-gap', 'running');
+      const audit = await callClaude(
+        [{ role: 'user', content: pKeywordAudit(safeResume, cur, jd) }],
+        t => append('keyword-gap', t)
+      );
+      append('keyword-gap', '\n\n── Rewriting with gap findings ──\n\n');
+      await sleep(3000);
+      cur = extractResume(await callClaude(
+        [{ role: 'user', content: pKeywordFill(cur, audit) }],
+        t => append('keyword-gap', t)
+      ));
+      setStatus('keyword-gap', 'done');
+    }
 
-    // 4 — CAR
-    setStatus('car', 'running');
-    cur = extractResume(await callClaude(
-      [{ role: 'user', content: pCar(cur, jd) }],
-      t => append('car', t)
-    ));
-    setStatus('car', 'done');
+    if (startIdx <= 3) {
+      _state.inputs['car'] = cur;
+      setStatus('car', 'running');
+      cur = extractResume(await callClaude(
+        [{ role: 'user', content: pCar(cur, jd) }],
+        t => append('car', t)
+      ));
+      setStatus('car', 'done');
+    }
 
-    // 5 — Recruiter Review (draft then critique, small pause between)
-    setStatus('recruiter', 'running');
-    const draft = extractResume(await callClaude(
-      [{ role: 'user', content: pRecruiterDraft(cur, jd) }],
-      t => append('recruiter', t)
-    ));
-    append('recruiter', '\n\n── Self-critique phase ──\n\n');
-    await sleep(3000);
-    cur = extractResume(await callClaude(
-      [{ role: 'user', content: pRecruiterCritique(draft, jd) }],
-      t => append('recruiter', t)
-    ));
-    setStatus('recruiter', 'done');
+    if (startIdx <= 4) {
+      _state.inputs['recruiter'] = cur;
+      setStatus('recruiter', 'running');
+      const draft = extractResume(await callClaude(
+        [{ role: 'user', content: pRecruiterDraft(cur, jd) }],
+        t => append('recruiter', t)
+      ));
+      append('recruiter', '\n\n── Self-critique phase ──\n\n');
+      await sleep(3000);
+      cur = extractResume(await callClaude(
+        [{ role: 'user', content: pRecruiterCritique(draft, jd) }],
+        t => append('recruiter', t)
+      ));
+      setStatus('recruiter', 'done');
+    }
 
     showFinal(cur);
 
@@ -558,6 +640,13 @@ async function runPipeline() {
       const id = running.id.replace('step-', '');
       setStatus(id, 'error');
       append(id, `\n\nError: ${err.message}`);
+      // Show retry button inside the failed step
+      const outEl = document.getElementById(`out-${id}`);
+      const btn2  = document.createElement('button');
+      btn2.className   = 'retry-step-btn';
+      btn2.textContent = '↺ Retry from this step';
+      btn2.onclick     = () => retryFromStep(id);
+      outEl.after(btn2);
     }
   } finally {
     btn.disabled = false;
