@@ -134,7 +134,7 @@ async function generateBullets() {
     </div>
     <div class="bullets-streaming" id="bulletStream"></div>`;
   pipeline.appendChild(card);
-  card.scrollIntoView({ behavior: 'smooth' });
+  pipeline.scrollTo({ top: pipeline.scrollHeight, behavior: 'smooth' });
 
   const prompt = `You are a resume writer. Generate exactly ${count} resume bullet points for the experience described below.
 
@@ -183,7 +183,7 @@ Output ONLY the bullets, one per line. No numbering, no dashes, no extra comment
         <button class="bullet-copy" onclick="copyBullet(this, ${i})">Copy</button>
       </div>`).join('')}`;
   card._bullets = bullets;
-  card.scrollIntoView({ behavior: 'smooth' });
+  pipeline.scrollTo({ top: pipeline.scrollHeight, behavior: 'smooth' });
 
   btn.disabled = false;
   btn.textContent = 'Generate';
@@ -374,25 +374,25 @@ function escHtml(s) {
 // ── Prompts ──────────────────────────────────────────────────────────────────
 
 function pRisen(resume, voice, jd) {
-  return `You are a senior technical recruiter and Certified Professional Resume Writer with 15 years of experience.
+  return `You are a senior technical recruiter and Certified Professional Resume Writer with 15 years of experience screening software engineers at FAANG and Series B+ startups.
 
-Tailor the resume for the job description. Maintain 100% factual accuracy — do not invent experience, metrics, tools, or projects.
+Tailor this software engineer resume for the job description below. Maintain 100% factual accuracy — do not invent any experience, metric, tool, or project that is not already in the resume.
 
 Steps:
 1. Extract all required hard skills, tools, and frameworks from the JD (explicit and implied).
-2. Identify every keyword/phrase in the JD absent from the resume.
-3. Map each missing keyword to the closest matching experience.
-4. Rewrite bullets to incorporate missing keywords naturally.
-5. Reorder bullets within each role to front-load JD-relevant achievements.
-6. Rewrite the professional summary to mirror the JD's top 3 requirements.
-7. Keep the resume to ONE PAGE maximum.
+2. Identify every keyword/phrase in the JD that is absent from the resume.
+3. Map each missing keyword to the closest matching experience in the resume.
+4. Rewrite bullet points to incorporate missing keywords using natural language.
+5. Reorder experience bullets within each role to prioritize JD-relevant achievements first.
+6. Rewrite the professional summary to directly mirror the JD's top 3 requirements.
+7. Audit formatting: flag any tables, columns, or text boxes that would fail ATS parsing.
 
 Voice constraints:
 ${voice || 'None specified.'}
 
-Rules: No keyword-stuffing. No invented metrics. Preserve all existing quantified achievements.
+Rules: Do not keyword-stuff. Do not invent metrics. Do not remove any quantified achievements from the original. Keep the same number of bullets per role — rewrite each bullet to be stronger, but never delete one. Keep the resume to 2 pages maximum.
 
-Output the complete tailored resume wrapped in <resume>…</resume> tags, then list every keyword added and where it was placed.
+Output the complete tailored resume in <resume>…</resume> tags, then list every keyword added and where it was placed.
 
 --- RESUME ---
 ${resume}
@@ -402,42 +402,35 @@ ${jd}`;
 }
 
 function pXyz(resume, jd) {
-  return `You are a resume writer specializing in quantified achievement bullets.
-
-Rewrite every weak or passive bullet using the XYZ formula:
+  return `Rewrite each weak or passive resume bullet using the XYZ formula:
 "Accomplished [X], by doing [Y], which resulted in [Z]."
 
 Rules:
-- Only rewrite weak bullets (passive voice, vague, "responsible for", no metrics).
-- Leave strong, already-quantified bullets untouched.
-- Use past tense. No special characters or markdown.
-- Do not invent metrics — suggest 2–3 plausible ranges marked [VERIFY] if none exist.
-- Keep total resume to ONE PAGE.
+- Only rewrite weak bullets (passive voice, vague, "responsible for", no metrics). Leave strong, already-quantified bullets untouched.
+- Keep each bullet under 2 lines.
+- Use past tense. No special characters or markdown formatting.
+- Do not invent metrics — if no metric exists, suggest 2–3 plausible ranges marked [VERIFY].
+- Never delete a bullet or merge two into one. The output must have the same bullet count per role as the input.
+- Target role context: ${jd.slice(0, 300)}
 
 Output the full updated resume in <resume>…</resume> tags, then list which bullets changed and why.
 
 --- RESUME ---
-${resume}
-
---- TARGET ROLE CONTEXT ---
-${jd}`;
+${resume}`;
 }
 
 function pKeywordAudit(originalResume, currentResume, jd) {
-  return `Analyze the job description and produce a keyword gap report.
+  return `Analyze this job description and produce a structured keyword gap report.
 
-Output a table:
-| JD Keyword | Present? | Phrase Used | Closest Existing Experience |
+Produce a table with 4 columns:
+| JD Keyword | Present in Resume? | If Yes — Exact Phrase Used | If No — Closest Existing Experience |
 
-Then list:
-- CRITICAL missing keywords (2+ times in JD, or in Requirements)
-- OPTIONAL missing keywords (once, or in Nice-to-Have)
+Then separately list:
+- CRITICAL missing keywords (appear 2+ times in JD or in "Requirements" section)
+- OPTIONAL missing keywords (appear once, in "Nice to Have" section)
 - FORMAT issues that would cause ATS parsing failure
 
---- ORIGINAL RESUME ---
-${originalResume}
-
---- CURRENT RESUME ---
+--- RESUME ---
 ${currentResume}
 
 --- JOB DESCRIPTION ---
@@ -445,14 +438,14 @@ ${jd}`;
 }
 
 function pKeywordFill(currentResume, auditReport) {
-  return `Using the keyword gap report, rewrite bullets to naturally incorporate every CRITICAL missing keyword.
+  return `Using the keyword gap report below, rewrite resume bullets to naturally incorporate the CRITICAL missing keywords.
 
 Constraints:
-- Only add a keyword where genuine matching experience exists.
-- Preserve all existing quantified metrics exactly — rephrase only, never change numbers.
-- Mark each changed bullet with [UPDATED].
-- No more than 2 bullets in any role may start with the same action verb.
-- Keep total resume to ONE PAGE.
+- Only use keywords where genuine experience exists (as shown in the resume).
+- Keep all existing quantified metrics intact — only rephrase, never change numbers.
+- Mark each changed bullet with [UPDATED] so it can be reviewed.
+- Do not start more than 2 bullets in any role with the same action verb.
+- Never delete a bullet or merge two into one. Same bullet count per role as input.
 
 Output the full updated resume in <resume>…</resume> tags.
 
@@ -464,31 +457,32 @@ ${auditReport}`;
 }
 
 function pCar(currentResume, jd) {
-  return `You are a resume writer applying the CAR method (Challenge → Action → Result).
+  return `You are a resume writer. Apply the CAR method (Challenge → Action → Result) to compress the 3 most narrative or verbose bullets in this resume.
 
 Identify the 3 bullets that are least concise — narrative, burying the result, or not leading with impact.
 
-For each, write a single ATS-optimized bullet:
-Format: Past-tense action verb + Brief challenge + Specific actions + Measurable result
-Length: Max 2 lines per bullet
+For each, convert it into a single ATS-optimized bullet:
+Format: Past-tense action verb + Challenge (brief) + Specific Actions + Measurable Result
+Length: Max 2 lines per bullet.
+Only include a metric if it is already in the original bullet. If approximate, add [APPROX].
+
+Target role context: ${jd.slice(0, 300)}
 
 Output the full resume with those 3 bullets replaced in <resume>…</resume> tags. Mark changed bullets with [CAR].
-Keep total resume to ONE PAGE.
+Leave all other bullets exactly as-is. Never delete a bullet or merge two into one.
 
 --- RESUME ---
-${currentResume}
-
---- TARGET ROLE CONTEXT ---
-${jd}`;
+${currentResume}`;
 }
 
 function pRecruiterDraft(currentResume, jd) {
-  return `Act as a senior technical recruiter screening 200 resumes per day. You have 7 seconds per resume.
+  return `Act as a senior technical recruiter who screens 200 software engineer resumes per day. You have 7 seconds to decide whether to advance a candidate.
 
-Produce the best possible final tailored version of this resume. No commentary — resume only.
-Single-column format. No tables, no graphics. ONE PAGE maximum.
+Review this resume against the job description. Your job right now is ONLY to produce a tailored draft resume. Do not add commentary yet.
 
-Output the resume in <resume>…</resume> tags.
+Output a complete tailored resume in <resume>…</resume> tags.
+Single-column format. No tables or graphics.
+Keep the same number of bullets per role as the input resume — rewrite each bullet to maximize recruiter impact, but never delete or merge bullets.
 
 --- RESUME ---
 ${currentResume}
@@ -498,17 +492,18 @@ ${jd}`;
 }
 
 function pRecruiterCritique(draftResume, jd) {
-  return `You are the same recruiter, reviewing the resume you just produced as if seeing it for the first time.
+  return `Now switch roles. You are the same recruiter, but you are reviewing the tailored resume you just produced as if you had never seen it before.
 
-Score it 0–100 and answer:
+Score it 0–100 against the job description and answer:
 1. Which 3 bullets are weakest and why?
-2. Which keywords from the JD are still missing?
-3. Any red flags a recruiter would notice?
+2. Which keywords from the JD are STILL missing?
+3. Are there any red flags a recruiter would notice?
 4. What would make you stop reading before line 10?
 
-Rewrite the 3 weakest bullets.
+Then rewrite those 3 weakest bullets based on your own critique.
 
-Output the complete polished resume in <resume>…</resume> tags. ONE PAGE maximum.
+Output the complete polished resume in <resume>…</resume> tags.
+Keep the same bullet count per role — only the 3 weakest bullets change, all others stay exactly as-is.
 
 --- RESUME ---
 ${draftResume}
@@ -665,7 +660,7 @@ function showFinal(text) {
     </div>
     <div class="final-text" id="finalText">${escHtml(text)}</div>`;
   pipeline.appendChild(div);
-  div.scrollIntoView({ behavior: 'smooth' });
+  pipeline.scrollTo({ top: pipeline.scrollHeight, behavior: 'smooth' });
   document.getElementById('copyFinalBtn').onclick = () => {
     navigator.clipboard.writeText(text).then(() => {
       const btn = document.getElementById('copyFinalBtn');
