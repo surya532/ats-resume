@@ -282,7 +282,7 @@ function parseRetrySeconds(body) {
 
 // Model list — works for Cerebras, Groq, and most OpenAI-compatible providers.
 // Override by setting API_BASE_URL + API_KEY in .env and updating this list.
-const MODELS = ['llama-3.3-70b', 'llama-3.1-70b', 'llama-3.1-8b'];
+const MODELS = ['llama3.1-8b', 'qwen-3-235b-a22b-instruct-2507'];
 let modelIndex = 0;
 const dailyExhausted = new Set(); // models that hit daily limit this session
 
@@ -296,7 +296,7 @@ async function callClaude(messages, onChunk) {
     const res = await fetch('/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model, max_tokens: 4000, messages })
+      body: JSON.stringify({ model, max_tokens: 2000, messages })
     });
 
     // 400: decommissioned → switch model; restricted → stop immediately

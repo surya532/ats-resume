@@ -1,6 +1,6 @@
 # ATS Resume Optimizer
 
-A local web app that runs your resume through 5 sequential AI-powered prompts to maximize ATS pass rate for a specific job description.
+A local web app that runs your resume through 6 sequential AI-powered prompts to maximize ATS pass rate for a specific job description.
 
 ## Pipeline
 
@@ -11,6 +11,7 @@ A local web app that runs your resume through 5 sequential AI-powered prompts to
 | 3 | Keyword Gap | 4-column audit of missing JD keywords, then rewrites to fill CRITICAL gaps with [UPDATED] markers |
 | 4 | CAR | Compresses the 3 most narrative bullets using Challenge → Action → Result into tight impact statements |
 | 5 | Recruiter Review | Draft pass (7-second screener) + self-critique scoring 0–100 to fix the 3 weakest bullets |
+| 6 | ATS Score | Scores original vs optimized resume across 4 categories with before/after breakdown |
 
 All steps preserve every bullet from every role — none are deleted or merged.
 
@@ -52,8 +53,8 @@ Open [http://localhost:3000](http://localhost:3000).
 1. **Upload** a PDF/DOCX resume or **paste** text in the Resume field
 2. Optionally add voice preferences (words to avoid, preferred verbs, example bullets)
 3. Paste the job description
-4. Click **Run All 5 Steps** and wait — each step streams output live
-5. Copy the final resume from the scrollable card at the bottom
+4. Click **Run All 6 Steps** and wait — each step streams output live
+5. Copy the final resume from the scrollable card at the bottom — ATS before/after score shown above it
 
 Each completed step can be expanded/collapsed. If a step fails, a **Retry from this step** button appears — no need to rerun the full pipeline.
 
@@ -65,11 +66,10 @@ Click **Generate bullets to fill space** to create XYZ/CAR-formatted bullets for
 
 If a step hits a rate limit, a live countdown badge appears and it retries automatically. If the daily token limit is hit on a model, the app falls back through the model chain automatically:
 
-1. `llama-3.3-70b` (primary)
-2. `llama-3.1-70b`
-3. `llama-3.1-8b`
+1. `llama3.1-8b` — primary (60k TPM, 30 req/min)
+2. `qwen-3-235b-a22b-instruct-2507` — fallback (30k TPM, 5 req/min)
 
-Once all models hit their daily limit, the pipeline stops with a clear message.
+Once all models hit their daily limit, the pipeline stops with a clear message rather than retrying indefinitely.
 
 ## Switching providers
 
@@ -87,5 +87,5 @@ Edit `.env` — no code changes needed:
 - Node.js + Express — API proxy and file parsing
 - `pdf-parse` — PDF text extraction
 - `mammoth` — DOCX text extraction
-- `llama-3.3-70b` via Cerebras (default) — all AI calls
+- `llama3.1-8b` via Cerebras (default) — all AI calls
 - Vanilla JS — no frontend framework
