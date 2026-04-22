@@ -206,6 +206,7 @@ const STEPS = [
   { id: 'keyword-gap', num: 3, name: 'Keyword Gap',      sub: 'Audit + fill (2 passes)' },
   { id: 'car',         num: 4, name: 'CAR',              sub: 'Story compression' },
   { id: 'recruiter',   num: 5, name: 'Recruiter Review', sub: 'Draft + self-critique (2 phases)' },
+  { id: 'ats-score',   num: 6, name: 'ATS Score',        sub: 'Before vs after scorecard' },
 ];
 
 function buildUI() {
@@ -279,11 +280,18 @@ function parseRetrySeconds(body) {
   return secs > 0 ? Math.ceil(secs) + 5 : 65;
 }
 
-const MODELS = ['llama-3.3-70b-versatile', 'meta-llama/llama-4-scout-17b-16e-instruct', 'llama-3.1-8b-instant'];
-let modelIndex = 0;  // tracks which model is active across all calls
+// Model list — works for Cerebras, Groq, and most OpenAI-compatible providers.
+// Override by setting API_BASE_URL + API_KEY in .env and updating this list.
+const MODELS = ['llama-3.3-70b', 'llama-3.1-70b', 'llama-3.1-8b'];
+let modelIndex = 0;
+const dailyExhausted = new Set(); // models that hit daily limit this session
 
 async function callClaude(messages, onChunk) {
   for (let attempt = 0; attempt < 10; attempt++) {
+    // Skip any model already at daily limit
+    while (modelIndex < MODELS.length && dailyExhausted.has(MODELS[modelIndex])) modelIndex++;
+    if (modelIndex >= MODELS.length) throw new Error('Daily token limit reached on all models. Try again tomorrow.');
+
     const model = MODELS[modelIndex];
     const res = await fetch('/api/claude', {
       method: 'POST',
@@ -291,9 +299,12 @@ async function callClaude(messages, onChunk) {
       body: JSON.stringify({ model, max_tokens: 4000, messages })
     });
 
-    // 400 decommissioned — switch model immediately
+    // 400: decommissioned → switch model; restricted → stop immediately
     if (res.status === 400) {
       const body = await res.text();
+      if (body.includes('organization_restricted') || body.includes('restricted')) {
+        throw new Error('API account restricted. Check your provider account status.');
+      }
       if (body.includes('decommissioned') && modelIndex < MODELS.length - 1) {
         modelIndex++;
         const fallback = MODELS[modelIndex];
@@ -310,22 +321,22 @@ async function callClaude(messages, onChunk) {
       const isDaily = body.includes('TPD') || body.includes('per day');
       const badge   = document.querySelector('.step-card.running .step-badge');
 
-      // Daily limit or request too large — try fallback model first
-      if ((isDaily || res.status === 413) && modelIndex < MODELS.length - 1) {
-        modelIndex++;
-        const fallback = MODELS[modelIndex];
-        onChunk(`\n⚡ Switching to ${fallback}\n`);
+      if (isDaily || res.status === 413) {
+        // Mark this model as daily-exhausted and try next one immediately
+        dailyExhausted.add(model);
+        onChunk(`\n⚡ ${model} daily limit hit — trying next model\n`);
         if (badge) badge.innerHTML = `<span class="spinner"></span>Switching model…`;
+        modelIndex++;
+        if (modelIndex >= MODELS.length) throw new Error('Daily token limit reached on all models. Try again tomorrow.');
         continue;
       }
 
-      // TPM limit (or no fallback left) — wait and retry
+      // TPM limit — wait and retry same model
       const wait  = parseRetrySeconds(body);
-      const label = isDaily ? 'Daily limit' : 'Rate limited';
       for (let s = wait; s > 0; s--) {
         const display = s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`;
         if (badge) badge.innerHTML = `⏳ ${display}`;
-        onChunk(`\r⏳ ${label} — retrying in ${display}…`);
+        onChunk(`\r⏳ Rate limited — retrying in ${display}…`);
         await sleep(1000);
       }
       if (badge) badge.innerHTML = `<span class="spinner"></span>Retrying…`;
@@ -513,9 +524,43 @@ ${jd}`;
 }
 
 
+function pAtsScore(originalResume, finalResume, jd) {
+  return `You are an ATS scoring engine. Score two versions of a resume against the job description across 4 categories.
+
+Categories (each 0–100):
+- keywords:   Percentage of critical JD keywords present in the resume
+- bullets:    Quality of bullets — quantified achievements, XYZ/CAR format, strong action verbs
+- formatting: ATS-safe structure — no tables, columns, or graphics; clean standard sections
+- relevance:  How well the overall experience narrative matches the target role
+
+Overall score = weighted average (keywords 35%, bullets 30%, formatting 15%, relevance 20%).
+
+Score the ORIGINAL resume first, then the OPTIMIZED resume.
+
+Output this exact JSON inside <ats> tags — no text before or after the tags:
+<ats>{"before":{"overall":0,"keywords":0,"bullets":0,"formatting":0,"relevance":0},"after":{"overall":0,"keywords":0,"bullets":0,"formatting":0,"relevance":0}}</ats>
+
+After the closing </ats> tag, write 3–5 bullet points explaining the key improvements and what still needs work.
+
+--- ORIGINAL RESUME ---
+${originalResume}
+
+--- OPTIMIZED RESUME ---
+${finalResume}
+
+--- JOB DESCRIPTION ---
+${jd}`;
+}
+
+function extractAtsScore(text) {
+  const m = text.match(/<ats>([\s\S]*?)<\/ats>/i);
+  if (!m) return null;
+  try { return JSON.parse(m[1].trim()); } catch { return null; }
+}
+
 // ── Pipeline ─────────────────────────────────────────────────────────────────
 
-const STEP_IDS = ['risen', 'xyz', 'keyword-gap', 'car', 'recruiter'];
+const STEP_IDS = ['risen', 'xyz', 'keyword-gap', 'car', 'recruiter', 'ats-score'];
 
 // Persists between runs so retry can resume mid-pipeline
 let _state = { safeResume: '', voice: '', jd: '', inputs: {} };
@@ -529,6 +574,7 @@ async function runPipeline() {
   if (!jd)     { alert('Please paste the job description.'); return; }
 
   modelIndex = 0;
+  dailyExhausted.clear();
   buildUI();
 
   const safeResume = redact(resume);
@@ -551,6 +597,7 @@ async function retryFromStep(id) {
   }
   document.querySelector('.final-card')?.remove();
   modelIndex = 0;
+  dailyExhausted.clear();
 
   await _execute(startIdx, _state.inputs[id]);
 }
@@ -626,7 +673,19 @@ async function _execute(startIdx, initialCur) {
       setStatus('recruiter', 'done');
     }
 
-    showFinal(cur);
+    let atsScores = null;
+    if (startIdx <= 5) {
+      _state.inputs['ats-score'] = cur;
+      setStatus('ats-score', 'running');
+      const scoreText = await callClaude(
+        [{ role: 'user', content: pAtsScore(_state.safeResume, cur, jd) }],
+        t => append('ats-score', t)
+      );
+      setStatus('ats-score', 'done');
+      atsScores = extractAtsScore(scoreText);
+    }
+
+    showFinal(cur, atsScores);
 
   } catch (err) {
     console.error(err);
@@ -645,11 +704,54 @@ async function _execute(startIdx, initialCur) {
     }
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Run All 5 Steps';
+    btn.textContent = 'Run All 6 Steps';
   }
 }
 
-function showFinal(text) {
+function scoreColor(n) {
+  return n >= 80 ? 'sc-green' : n >= 60 ? 'sc-yellow' : 'sc-red';
+}
+
+function renderScoreCard(scores) {
+  if (!scores) return '';
+  const { before: b, after: a } = scores;
+  const delta = a.overall - b.overall;
+  const sign  = delta >= 0 ? '+' : '';
+  const cats  = [
+    ['Keyword Match', b.keywords,   a.keywords],
+    ['Bullet Quality', b.bullets,    a.bullets],
+    ['Formatting',    b.formatting, a.formatting],
+    ['Relevance',     b.relevance,  a.relevance],
+  ];
+  return `
+    <div class="score-card">
+      <div class="score-overall">
+        <div class="score-col">
+          <div class="score-lbl">Before</div>
+          <div class="score-num ${scoreColor(b.overall)}">${b.overall}</div>
+        </div>
+        <div class="score-arrow">→</div>
+        <div class="score-col">
+          <div class="score-lbl">After</div>
+          <div class="score-num ${scoreColor(a.overall)}">${a.overall}</div>
+        </div>
+        <div class="score-delta ${delta >= 0 ? 'sc-green' : 'sc-red'}">${sign}${delta}</div>
+      </div>
+      <div class="score-breakdown">
+        ${cats.map(([label, bv, av]) => `
+          <div class="score-item">
+            <span class="score-item-lbl">${label}</span>
+            <span class="score-item-val">
+              <span class="${scoreColor(bv)}">${bv}</span>
+              <span class="sc-muted"> → </span>
+              <span class="${scoreColor(av)}">${av}</span>
+            </span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function showFinal(text, scores) {
   const pipeline = document.getElementById('pipeline');
   const div = document.createElement('div');
   div.className = 'final-card';
@@ -658,6 +760,7 @@ function showFinal(text) {
       <span>Final Resume</span>
       <button class="copy-btn" id="copyFinalBtn">Copy to clipboard</button>
     </div>
+    ${renderScoreCard(scores)}
     <div class="final-text" id="finalText">${escHtml(text)}</div>`;
   pipeline.appendChild(div);
   pipeline.scrollTo({ top: pipeline.scrollHeight, behavior: 'smooth' });

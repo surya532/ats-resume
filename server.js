@@ -34,21 +34,27 @@ app.post('/api/upload', upload.single('resume'), async (req, res) => {
   }
 });
 
-// ── Claude / Groq proxy ──────────────────────────────────────────────────────
+const API_BASE = process.env.API_BASE_URL || 'https://api.cerebras.ai/v1';
+const API_KEY  = process.env.API_KEY || process.env.GROQ_API_KEY;
+const PROVIDER = new URL(API_BASE).hostname.split('.').slice(-2, -1)[0];
+
+console.log(`Provider: ${PROVIDER} — ${API_BASE}`);
+
+// ── LLM proxy ────────────────────────────────────────────────────────────────
 app.post('/api/claude', express.json(), async (req, res) => {
   try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const response = await fetch(`${API_BASE}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+        'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({ ...req.body, stream: true })
     });
 
     if (!response.ok) {
       const text = await response.text();
-      console.error(`Groq ${response.status}:`, text);
+      console.error(`${PROVIDER} ${response.status}:`, text);
       return res.status(response.status).send(text);
     }
 

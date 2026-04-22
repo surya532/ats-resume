@@ -18,9 +18,13 @@ Personal info (name, email, phone, LinkedIn) is stripped client-side before any 
 
 ## Setup
 
-### 1. Get a Groq API key
+### 1. Get an API key
 
-Sign up at [console.groq.com](https://console.groq.com) — free tier, no card required.
+The default provider is **Cerebras** — free tier, no card required, very fast inference.
+
+Sign up at [cloud.cerebras.ai](https://cloud.cerebras.ai) and create an API key.
+
+Any OpenAI-compatible provider works. See `.env` for alternatives (Together AI, OpenRouter, Groq).
 
 ### 2. Install dependencies
 
@@ -31,7 +35,8 @@ npm install
 ### 3. Add your API key
 
 ```bash
-echo "GROQ_API_KEY=your_key_here" > .env
+echo "API_BASE_URL=https://api.cerebras.ai/v1" > .env
+echo "API_KEY=your_key_here" >> .env
 ```
 
 ### 4. Start the server
@@ -58,17 +63,29 @@ Click **Generate bullets to fill space** to create XYZ/CAR-formatted bullets for
 
 ## Rate limits
 
-Groq free tier allows 12,000 tokens/minute. If a step hits the limit, a live countdown badge appears on that step and it retries automatically. The pipeline completes without intervention — it just takes longer.
+If a step hits a rate limit, a live countdown badge appears and it retries automatically. If the daily token limit is hit on a model, the app falls back through the model chain automatically:
 
-If the daily token limit is hit, the app automatically falls back through a model chain:
-1. `llama-3.3-70b-versatile` (primary)
-2. `meta-llama/llama-4-scout-17b-16e-instruct`
-3. `llama-3.1-8b-instant`
+1. `llama-3.3-70b` (primary)
+2. `llama-3.1-70b`
+3. `llama-3.1-8b`
+
+Once all models hit their daily limit, the pipeline stops with a clear message.
+
+## Switching providers
+
+Edit `.env` — no code changes needed:
+
+| Provider | API_BASE_URL |
+|----------|-------------|
+| Cerebras | `https://api.cerebras.ai/v1` |
+| Together AI | `https://api.together.xyz/v1` |
+| OpenRouter | `https://openrouter.ai/api/v1` |
+| Groq | `https://api.groq.com/openai/v1` |
 
 ## Stack
 
 - Node.js + Express — API proxy and file parsing
 - `pdf-parse` — PDF text extraction
 - `mammoth` — DOCX text extraction
-- `llama-3.3-70b-versatile` via Groq — all AI calls
+- `llama-3.3-70b` via Cerebras (default) — all AI calls
 - Vanilla JS — no frontend framework
