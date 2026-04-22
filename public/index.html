@@ -263,11 +263,19 @@
     /* ── Right panel ── */
     .pipeline {
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    /* Steps pane — scrolls independently */
+    .steps-pane {
+      flex: 1;
       overflow-y: auto;
       padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      min-height: 0;
     }
 
     .empty-state {
@@ -350,13 +358,14 @@
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 10px 12px;
-      font-size: 11.5px;
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      line-height: 1.6;
+      font-size: 12px;
+      font-family: inherit;
+      line-height: 1.7;
       max-height: 260px;
       overflow-y: auto;
       white-space: pre-wrap;
       word-break: break-word;
+      color: var(--muted);
     }
 
     /* ── Final resume card ── */
@@ -365,6 +374,8 @@
       border: 1px solid var(--accent-dim);
       border-radius: 9px;
       overflow: hidden;
+      flex-shrink: 0;
+      margin: 0 16px 16px;
     }
     .final-header {
       display: flex;
@@ -372,8 +383,12 @@
       justify-content: space-between;
       padding: 11px 14px;
       border-bottom: 1px solid var(--accent-dim);
+      user-select: none;
     }
-    .final-header span { font-size: 13px; font-weight: 600; color: var(--accent); }
+    .final-header > span { font-size: 13px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+    .final-header-actions { display: flex; align-items: center; gap: 8px; }
+    .final-chevron { transition: transform 0.2s; flex-shrink: 0; }
+    .final-score-mini { font-size: 11px; font-weight: 700; }
     .copy-btn {
       background: var(--accent-dim);
       color: var(--accent);
@@ -386,13 +401,55 @@
     }
     .copy-btn:hover { opacity: 0.8; }
     .final-text {
-      padding: 14px;
-      font-size: 12.5px;
+      padding: 16px 18px;
+      font-size: 13px;
       line-height: 1.75;
-      white-space: pre-wrap;
       max-height: 520px;
       overflow-y: auto;
     }
+    .final-text h2       { font-size: 14px; font-weight: 700; margin: 14px 0 3px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; }
+    .final-text h3       { font-size: 13px; font-weight: 700; margin: 10px 0 2px; }
+    .final-text h4       { font-size: 12px; font-weight: 600; margin: 8px 0 2px; color: var(--muted); }
+    .final-text hr       { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+    .final-text strong   { font-weight: 600; }
+    .final-text .r-bullet { padding-left: 14px; position: relative; margin-bottom: 2px; }
+    .final-text .r-bullet::before { content: '•'; position: absolute; left: 2px; color: var(--muted); }
+    .final-text .r-line  { margin-bottom: 1px; }
+    .final-text .r-gap   { height: 7px; }
+
+    /* ── ATS score card ── */
+    .score-card {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--accent-dim);
+      background: rgba(99,102,241,0.04);
+    }
+    .score-overall {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .score-col { text-align: center; }
+    .score-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+    .score-num { font-size: 30px; font-weight: 700; line-height: 1; }
+    .score-arrow { font-size: 16px; color: var(--muted); }
+    .score-delta { font-size: 22px; font-weight: 700; margin-left: 4px; }
+    .score-breakdown {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px 20px;
+    }
+    .score-item { display: flex; justify-content: space-between; font-size: 11.5px; }
+    .score-item-lbl { color: var(--muted); }
+    .score-item-val { font-weight: 600; }
+    .sc-green  { color: #4ade80; }
+    .sc-yellow { color: #fbbf24; }
+    .sc-red    { color: #f87171; }
+    .sc-muted  { color: var(--muted); font-weight: 400; }
 
     /* ── Generated bullets ── */
     .bullets-card {
@@ -540,7 +597,7 @@
         <textarea id="jd" rows="9" placeholder="Paste the job description here..."></textarea>
       </div>
 
-      <button class="run-btn" id="runBtn" onclick="runPipeline()">Run All 5 Steps</button>
+      <button class="run-btn" id="runBtn" onclick="runPipeline()">Run All 6 Steps</button>
 
       <div class="divider">or</div>
 
@@ -570,7 +627,7 @@
         <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
         </svg>
-        <p>Upload your resume and a job description,<br>then click <strong>Run All 5 Steps</strong>.</p>
+        <p>Upload your resume and a job description,<br>then click <strong>Run All 6 Steps</strong>.</p>
         <p style="font-size:11px;margin-top:4px;">Voice preferences are saved automatically.</p>
       </div>
     </div>

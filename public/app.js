@@ -124,7 +124,7 @@ async function generateBullets() {
 
   document.getElementById('emptyState')?.remove();
 
-  const pipeline = document.getElementById('pipeline');
+  const stepsPane = document.getElementById('stepsPane') || document.getElementById('pipeline');
   const card = document.createElement('div');
   card.className = 'bullets-card';
   card.innerHTML = `
@@ -133,8 +133,8 @@ async function generateBullets() {
       <small><span class="spinner"></span>Writing…</small>
     </div>
     <div class="bullets-streaming" id="bulletStream"></div>`;
-  pipeline.appendChild(card);
-  pipeline.scrollTo({ top: pipeline.scrollHeight, behavior: 'smooth' });
+  stepsPane.appendChild(card);
+  stepsPane.scrollTo({ top: stepsPane.scrollHeight, behavior: 'smooth' });
 
   const prompt = `You are a resume writer. Generate exactly ${count} resume bullet points for the experience described below.
 
@@ -183,7 +183,7 @@ Output ONLY the bullets, one per line. No numbering, no dashes, no extra comment
         <button class="bullet-copy" onclick="copyBullet(this, ${i})">Copy</button>
       </div>`).join('')}`;
   card._bullets = bullets;
-  pipeline.scrollTo({ top: pipeline.scrollHeight, behavior: 'smooth' });
+  stepsPane.scrollTo({ top: stepsPane.scrollHeight, behavior: 'smooth' });
 
   btn.disabled = false;
   btn.textContent = 'Generate';
@@ -214,6 +214,12 @@ function buildUI() {
   document.getElementById('emptyState')?.remove();
   pipeline.innerHTML = '';
 
+  // Steps go into their own scrollable pane
+  const stepsPane = document.createElement('div');
+  stepsPane.id = 'stepsPane';
+  stepsPane.className = 'steps-pane';
+  pipeline.appendChild(stepsPane);
+
   for (const s of STEPS) {
     const card = document.createElement('div');
     card.className = 'step-card';
@@ -233,7 +239,7 @@ function buildUI() {
       <div class="step-body">
         <div class="step-output" id="out-${s.id}"></div>
       </div>`;
-    pipeline.appendChild(card);
+    stepsPane.appendChild(card);
   }
 }
 
@@ -259,8 +265,51 @@ function setStatus(id, state) {
 
 function append(id, text) {
   const el = document.getElementById(`out-${id}`);
-  el.textContent += text;
+  // Strip XML wrapper tags and raw <ats> blocks from streamed display
+  const clean = text
+    .replace(/<\/?resume>/gi, '')
+    .replace(/<ats>[\s\S]*?<\/ats>/gi, '')
+    .replace(/<ats>/gi, '');
+  el.textContent += clean;
   el.scrollTop = el.scrollHeight;
+  // Keep the running step visible in the steps pane
+  const pane = document.getElementById('stepsPane');
+  if (pane) {
+    const card = document.getElementById(`step-${id}`);
+    if (card) card.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+// Render markdown to HTML for the final resume display — line-by-line for reliability
+function renderMarkdown(text) {
+  // Strip any stray XML tags the model may have left
+  text = text.replace(/<\/?resume>/gi, '').replace(/<ats>[\s\S]*?<\/ats>/gi, '').trim();
+
+  function inlineEsc(line) {
+    return line
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  }
+
+  return text.split('\n').map(line => {
+    // Heading: # / ## / ###
+    const hm = line.match(/^(#{1,3}) (.+)/);
+    if (hm) {
+      const lvl = hm[1].length;
+      const tag = lvl === 1 ? 'h2' : lvl === 2 ? 'h3' : 'h4';
+      return `<${tag}>${inlineEsc(hm[2])}</${tag}>`;
+    }
+    // Horizontal rule
+    if (/^[-─═]{3,}\s*$/.test(line)) return '<hr>';
+    // Bullet
+    if (/^[\-•*]\s/.test(line)) {
+      return `<div class="r-bullet">${inlineEsc(line.replace(/^[\-•*]\s/, ''))}</div>`;
+    }
+    // Empty line
+    if (line.trim() === '') return '<div class="r-gap"></div>';
+    // Normal line
+    return `<div class="r-line">${inlineEsc(line)}</div>`;
+  }).join('');
 }
 
 // ── API ──────────────────────────────────────────────────────────────────────
@@ -753,17 +802,30 @@ function renderScoreCard(scores) {
 
 function showFinal(text, scores) {
   const pipeline = document.getElementById('pipeline');
+
+  // Collapse all completed steps — user can re-expand any individually
+  document.querySelectorAll('.step-card.done').forEach(card => card.classList.remove('open'));
+
+  document.getElementById('finalCard')?.remove();
   const div = document.createElement('div');
   div.className = 'final-card';
+  div.id = 'finalCard';
+  const scoreMini = scores
+    ? `<span class="final-score-mini sc-${scoreColor(scores.after.overall).replace('sc-','')}">${scores.before.overall} → ${scores.after.overall}</span>`
+    : '';
   div.innerHTML = `
-    <div class="final-header">
-      <span>Final Resume</span>
-      <button class="copy-btn" id="copyFinalBtn">Copy to clipboard</button>
+    <div class="final-header" onclick="toggleFinalCard()" style="cursor:pointer">
+      <span>Final Resume ${scoreMini}</span>
+      <div class="final-header-actions">
+        <button class="copy-btn" id="copyFinalBtn" onclick="event.stopPropagation()">Copy to clipboard</button>
+        <svg id="finalChevron" class="final-chevron open" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
     </div>
-    ${renderScoreCard(scores)}
-    <div class="final-text" id="finalText">${escHtml(text)}</div>`;
+    <div id="finalBody">
+      ${renderScoreCard(scores)}
+      <div class="final-text" id="finalText">${renderMarkdown(text)}</div>
+    </div>`;
   pipeline.appendChild(div);
-  pipeline.scrollTo({ top: pipeline.scrollHeight, behavior: 'smooth' });
   document.getElementById('copyFinalBtn').onclick = () => {
     navigator.clipboard.writeText(text).then(() => {
       const btn = document.getElementById('copyFinalBtn');
@@ -771,4 +833,12 @@ function showFinal(text, scores) {
       setTimeout(() => btn.textContent = 'Copy to clipboard', 2000);
     });
   };
+}
+
+function toggleFinalCard() {
+  const body    = document.getElementById('finalBody');
+  const chevron = document.getElementById('finalChevron');
+  const hidden  = body.style.display === 'none';
+  body.style.display    = hidden ? '' : 'none';
+  chevron.style.transform = hidden ? '' : 'rotate(-90deg)';
 }
