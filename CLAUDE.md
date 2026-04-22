@@ -21,17 +21,36 @@ public/
 `runPipeline()` in app.js:
 1. Calls `getResumeText()` — returns `uploadedText` or textarea value
 2. Calls `redact(text)` — strips name (first line), email, phone, LinkedIn before any API call
-3. Runs 5 sequential `callClaude()` calls (steps 3 and 5 each have two back-to-back calls)
+3. Runs 5 sequential `callClaude()` calls (steps 3 and 5 each have two back-to-back calls with a 3s pause between)
 4. Each step extracts `<resume>…</resume>` from the model output and passes it to the next step
-5. Final resume shown in a copyable card
+5. Final resume shown in a scrollable copyable card
 
-### Rate limiting
-`callClaude()` retries up to 8 times on 429. Each retry waits `max(groq_suggested_wait + 2, 65)` seconds to ensure the 60s rolling TPM window clears. Groq free tier = 12,000 TPM.
+### Rate limiting & model fallback
+`callClaude()` retries up to 10 times on 429/413/400. Model fallback chain:
+- `llama-3.3-70b-versatile` → `meta-llama/llama-4-scout-17b-16e-instruct` → `llama-3.1-8b-instant`
+- 429 TPM: waits `parseRetrySeconds(body) + 5s` (handles `22m10s` format), shows live countdown badge
+- 429 TPD / 413 too large: switches to next model immediately
+- 400 decommissioned: switches to next model immediately
+
+### Retry from step
+`_state.inputs[stepId]` stores the resume text entering each step. On failure, a **Retry from this step** button calls `retryFromStep(id)`, which resets that step and all downstream steps, then calls `_execute(startIdx, savedInput)`.
 
 ### Prompts
-All prompt functions are in `app.js` prefixed with `p` — `pRisen`, `pXyz`, `pKeywordAudit`, `pKeywordFill`, `pCar`, `pRecruiterDraft`, `pRecruiterCritique`.
+All prompt functions in `app.js` prefixed with `p`:
 
-Each prompt asks the model to wrap the resume output in `<resume>…</resume>` tags. `extractResume()` parses those tags; falls back to full text if tags are absent.
+| Function | Framework | Key behaviour |
+|----------|-----------|--------------|
+| `pRisen` | RISEN | 7-step rewrite — keyword map, bullet reorder, summary rewrite. Never deletes bullets. |
+| `pXyz` | XYZ | Rewrites weak/passive bullets only. Leaves strong bullets untouched. |
+| `pKeywordAudit` | Keyword Gap (audit) | 4-column gap table + CRITICAL / OPTIONAL / FORMAT lists |
+| `pKeywordFill` | Keyword Gap (fill) | Incorporates CRITICAL keywords, marks changes [UPDATED] |
+| `pCar` | CAR | Rewrites 3 most narrative bullets using Challenge→Action→Result |
+| `pRecruiterDraft` | Recruiter (draft) | 7-second screener persona, full tailored draft |
+| `pRecruiterCritique` | Recruiter (critique) | Self-scores 0–100, rewrites 3 weakest bullets |
+
+Each prompt instructs the model to wrap output in `<resume>…</resume>` tags. `extractResume()` parses those tags; falls back to full text if absent.
+
+All prompts enforce: same bullet count per role as input — rewrite to improve, never delete or merge.
 
 ## Environment
 
