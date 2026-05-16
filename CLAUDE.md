@@ -8,7 +8,7 @@ server.js          Express server — two endpoints:
                      POST /api/claude  LLM API proxy (streams SSE back to browser)
 
 public/
-  index.html       All CSS + HTML shell (no build step)
+  index.html       All CSS + HTML shell (no build step) — Inter font via Google Fonts
   app.js           All client-side logic — pipeline, UI, prompts
 ```
 
@@ -59,6 +59,10 @@ Each pipeline prompt instructs the model to wrap resume output in `<resume>…</
 All pipeline prompts enforce: same bullet count per role as input — rewrite to improve, never delete or merge.
 
 ### Post-pipeline features
+
+**Voice field** — collapsible via `toggleVoice()`, collapsed by default. `#voiceToggle` / `#voiceInner`.
+
+**Step UI** — Each step in the `STEPS` array has `tag` and `tagCls` fields rendered as colored framework badges in `buildUI()`. `setStatus()` swaps the number circle to a checkmark SVG (`CHECK_SVG`) on done, restores it on retry/error. A CSS `::after` spinning ring animates the circle when running. Header progress uses labeled `.hp-step` + `.hp-connector` structure; `:has()` CSS colors labels by dot state.
 
 **Diff view** — `computeLineDiff(a, b)` runs an LCS DP on both resumes split into lines, producing `{ type: 'same'|'added'|'removed', text }` entries. `renderDiffView()` renders two side-by-side panels: left shows original (removed lines in red), right shows optimized (added lines in green). `toggleDiff()` switches `#resumeView` / `#diffView` visibility and toggles `.active` on `#diffBtn`.
 

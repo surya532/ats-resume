@@ -27,6 +27,15 @@ const resumeEl = document.getElementById('resume');
 resumeEl.value = localStorage.getItem('ats-resume') || '';
 resumeEl.addEventListener('input', () => localStorage.setItem('ats-resume', resumeEl.value));
 
+// ── Voice toggle ─────────────────────────────────────────────────────────────
+
+function toggleVoice() {
+  const toggle = document.getElementById('voiceToggle');
+  const inner  = document.getElementById('voiceInner');
+  const open   = inner.classList.toggle('open');
+  toggle.classList.toggle('open', open);
+}
+
 // ── Tab switching ────────────────────────────────────────────────────────────
 
 function switchTab(tab) {
@@ -201,12 +210,12 @@ function copyBullet(btn, index) {
 // ── Step UI ──────────────────────────────────────────────────────────────────
 
 const STEPS = [
-  { id: 'risen',       num: 1, name: 'RISEN',            sub: 'Full resume rewrite' },
-  { id: 'xyz',         num: 2, name: 'XYZ',              sub: 'Bullet optimization' },
-  { id: 'keyword-gap', num: 3, name: 'Keyword Gap',      sub: 'Audit + fill (2 passes)' },
-  { id: 'car',         num: 4, name: 'CAR',              sub: 'Story compression' },
-  { id: 'recruiter',   num: 5, name: 'Recruiter Review', sub: 'Draft + self-critique (2 phases)' },
-  { id: 'ats-score',   num: 6, name: 'ATS Score',        sub: 'Before vs after scorecard' },
+  { id: 'risen',       num: 1, name: 'RISEN',            sub: 'Full resume rewrite',              tag: 'Rewrite',  tagCls: 'tag-purple' },
+  { id: 'xyz',         num: 2, name: 'XYZ',              sub: 'Bullet optimization',              tag: 'Bullets',  tagCls: 'tag-blue'   },
+  { id: 'keyword-gap', num: 3, name: 'Keyword Gap',      sub: 'Audit + fill (2 passes)',          tag: 'Keywords', tagCls: 'tag-teal'   },
+  { id: 'car',         num: 4, name: 'CAR',              sub: 'Story compression',                tag: 'Stories',  tagCls: 'tag-orange' },
+  { id: 'recruiter',   num: 5, name: 'Recruiter Review', sub: 'Draft + self-critique (2 phases)', tag: 'Review',   tagCls: 'tag-pink'   },
+  { id: 'ats-score',   num: 6, name: 'ATS Score',        sub: 'Before vs after scorecard',        tag: 'Score',    tagCls: 'tag-green'  },
 ];
 
 function buildUI() {
@@ -226,13 +235,16 @@ function buildUI() {
     card.id = `step-${s.id}`;
     card.innerHTML = `
       <div class="step-header" onclick="toggleStep('${s.id}')">
-        <div class="step-num">${s.num}</div>
-        <div>
-          <div class="step-title">${s.name}</div>
+        <div class="step-num" id="num-${s.id}" data-num="${s.num}">${s.num}</div>
+        <div class="step-info">
+          <div class="step-title-row">
+            <div class="step-title">${s.name}</div>
+            <span class="step-tag ${s.tagCls}">${s.tag}</span>
+          </div>
           <div class="step-sub">${s.sub}</div>
         </div>
         <div class="step-badge" id="badge-${s.id}">Waiting</div>
-        <svg class="step-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg class="step-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="6 9 12 15 18 9"/>
         </svg>
       </div>
@@ -252,17 +264,27 @@ function toggleStep(id) {
   card.classList.toggle('open');
 }
 
+const CHECK_SVG = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>`;
+
 function setStatus(id, state) {
   const card  = document.getElementById(`step-${id}`);
   const badge = document.getElementById(`badge-${id}`);
+  const numEl = document.getElementById(`num-${id}`);
   const wasOpen = card.classList.contains('open');
   card.className = `step-card ${state}${(state === 'running' || wasOpen) ? ' open' : ''}`;
-  if (state === 'running') badge.innerHTML = `<span class="spinner"></span>Running…`;
-  else if (state === 'done')  badge.textContent = '✓ Done';
-  else if (state === 'error') badge.textContent = '✗ Error';
-  // Update header progress dot
+
+  if (state === 'running') {
+    badge.innerHTML = `<span class="spinner"></span>Running…`;
+    if (numEl) numEl.innerHTML = numEl.dataset.num;
+  } else if (state === 'done') {
+    badge.textContent = 'Done';
+    if (numEl) numEl.innerHTML = CHECK_SVG;
+  } else if (state === 'error') {
+    badge.textContent = 'Error';
+    if (numEl) numEl.innerHTML = numEl.dataset.num;
+  }
   const dot = document.getElementById(`hp-${id}`);
-  if (dot) { dot.className = `hp-dot ${state}`; }
+  if (dot) dot.className = `hp-dot ${state}`;
 }
 
 function append(id, text) {
@@ -647,11 +669,13 @@ async function retryFromStep(id) {
 
   // Reset this step and every step after it
   for (let i = startIdx; i < STEP_IDS.length; i++) {
-    const sid  = STEP_IDS[i];
-    const card = document.getElementById(`step-${sid}`);
+    const sid   = STEP_IDS[i];
+    const card  = document.getElementById(`step-${sid}`);
+    const numEl = document.getElementById(`num-${sid}`);
     card.className = 'step-card';
     document.getElementById(`badge-${sid}`).textContent = 'Waiting';
     document.getElementById(`out-${sid}`).textContent = '';
+    if (numEl) numEl.innerHTML = numEl.dataset.num;
   }
   document.querySelector('.final-card')?.remove();
   modelIndex = 0;
@@ -829,15 +853,21 @@ function showFinal(text, scores) {
   div.className = 'final-card';
   div.id = 'finalCard';
   const scoreMini = scores
-    ? `<span class="final-score-mini sc-${scoreColor(scores.after.overall).replace('sc-','')}">${scores.before.overall} → ${scores.after.overall}</span>`
+    ? `<span class="final-score-mini ${scoreColor(scores.after.overall)}" style="border-color:currentColor;padding:2px 9px;border-radius:20px;border:1px solid">${scores.before.overall} → ${scores.after.overall}</span>`
     : '';
   div.innerHTML = `
-    <div class="final-header" onclick="toggleFinalCard()" style="cursor:pointer">
-      <span>Final Resume ${scoreMini}</span>
+    <div class="final-header" onclick="toggleFinalCard()">
+      <div class="final-header-left">
+        <div class="final-doc-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <span class="final-title">Final Resume</span>
+        ${scoreMini}
+      </div>
       <div class="final-header-actions">
         <button class="diff-btn" id="diffBtn" onclick="event.stopPropagation();toggleDiff()">⇄ Diff</button>
         <button class="copy-btn" id="copyFinalBtn" onclick="event.stopPropagation()">Copy</button>
-        <svg id="finalChevron" class="final-chevron open" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        <svg id="finalChevron" class="final-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
     </div>
     <div id="finalBody">
