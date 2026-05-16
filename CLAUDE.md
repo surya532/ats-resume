@@ -51,10 +51,18 @@ All prompt functions in `app.js` prefixed with `p`:
 | `pRecruiterDraft` | Recruiter (draft) | 7-second screener persona, full tailored draft |
 | `pRecruiterCritique` | Recruiter (critique) | Self-scores 0–100, rewrites 3 weakest bullets |
 | `pAtsScore` | ATS Score | Scores original vs optimized on 4 categories, outputs `<ats>` JSON |
+| `pCoverLetter` | — | 3-paragraph tailored cover letter, 200–250 words, no filler phrases |
+| `pInterviewPrep` | — | 8 questions with talking points (behavioral, technical, deep-dive, why-us) |
 
-Each prompt instructs the model to wrap resume output in `<resume>…</resume>` tags. `extractResume()` parses those tags; falls back to full text if absent.
+Each pipeline prompt instructs the model to wrap resume output in `<resume>…</resume>` tags. `extractResume()` parses those tags; falls back to full text if absent.
 
-All prompts enforce: same bullet count per role as input — rewrite to improve, never delete or merge.
+All pipeline prompts enforce: same bullet count per role as input — rewrite to improve, never delete or merge.
+
+### Post-pipeline features
+
+**Diff view** — `computeLineDiff(a, b)` runs an LCS DP on both resumes split into lines, producing `{ type: 'same'|'added'|'removed', text }` entries. `renderDiffView()` renders two side-by-side panels: left shows original (removed lines in red), right shows optimized (added lines in green). `toggleDiff()` switches `#resumeView` / `#diffView` visibility and toggles `.active` on `#diffBtn`.
+
+**Cover letter / Interview prep** — `_streamToOutputCard(cardId, title, bodyId, messages)` is a shared helper that creates an `.output-card` in `stepsPane`, streams a `callClaude()` response into it, and disables all `.action-btn` elements during generation. `generateCoverLetter()` and `generateInterviewPrep()` call it with `_finalResume` (module-level, set in `showFinal()`) and `_state.jd`.
 
 ## Environment
 

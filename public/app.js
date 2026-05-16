@@ -255,12 +255,14 @@ function toggleStep(id) {
 function setStatus(id, state) {
   const card  = document.getElementById(`step-${id}`);
   const badge = document.getElementById(`badge-${id}`);
-  // Preserve open state when transitioning running → done
   const wasOpen = card.classList.contains('open');
   card.className = `step-card ${state}${(state === 'running' || wasOpen) ? ' open' : ''}`;
   if (state === 'running') badge.innerHTML = `<span class="spinner"></span>Running…`;
   else if (state === 'done')  badge.textContent = '✓ Done';
   else if (state === 'error') badge.textContent = '✗ Error';
+  // Update header progress dot
+  const dot = document.getElementById(`hp-${id}`);
+  if (dot) { dot.className = `hp-dot ${state}`; }
 }
 
 function append(id, text) {
@@ -613,6 +615,7 @@ const STEP_IDS = ['risen', 'xyz', 'keyword-gap', 'car', 'recruiter', 'ats-score'
 
 // Persists between runs so retry can resume mid-pipeline
 let _state = { safeResume: '', voice: '', jd: '', inputs: {} };
+let _finalResume = ''; // final optimized resume text, for cover letter / interview prep
 
 async function runPipeline() {
   const resume = getResumeText();
@@ -624,6 +627,12 @@ async function runPipeline() {
 
   modelIndex = 0;
   dailyExhausted.clear();
+  document.getElementById('headerProgress').classList.add('visible');
+  // Reset all dots
+  STEP_IDS.forEach(id => {
+    const dot = document.getElementById(`hp-${id}`);
+    if (dot) dot.className = 'hp-dot';
+  });
   buildUI();
 
   const safeResume = redact(resume);
@@ -761,6 +770,10 @@ function scoreColor(n) {
   return n >= 80 ? 'sc-green' : n >= 60 ? 'sc-yellow' : 'sc-red';
 }
 
+function barColor(n) {
+  return n >= 80 ? '#34d399' : n >= 60 ? '#fbbf24' : '#f87171';
+}
+
 function renderScoreCard(scores) {
   if (!scores) return '';
   const { before: b, after: a } = scores;
@@ -768,7 +781,7 @@ function renderScoreCard(scores) {
   const sign  = delta >= 0 ? '+' : '';
   const cats  = [
     ['Keyword Match', b.keywords,   a.keywords],
-    ['Bullet Quality', b.bullets,    a.bullets],
+    ['Bullet Quality', b.bullets,   a.bullets],
     ['Formatting',    b.formatting, a.formatting],
     ['Relevance',     b.relevance,  a.relevance],
   ];
@@ -790,9 +803,12 @@ function renderScoreCard(scores) {
         ${cats.map(([label, bv, av]) => `
           <div class="score-item">
             <span class="score-item-lbl">${label}</span>
+            <div class="score-bar-wrap">
+              <div class="score-bar" style="width:${av}%;background:${barColor(av)}"></div>
+            </div>
             <span class="score-item-val">
               <span class="${scoreColor(bv)}">${bv}</span>
-              <span class="sc-muted"> → </span>
+              <span class="sc-muted">→</span>
               <span class="${scoreColor(av)}">${av}</span>
             </span>
           </div>`).join('')}
@@ -801,6 +817,8 @@ function renderScoreCard(scores) {
 }
 
 function showFinal(text, scores) {
+  _finalResume = text;
+
   const pipeline = document.getElementById('pipeline');
 
   // Collapse all completed steps — user can re-expand any individually
@@ -817,20 +835,31 @@ function showFinal(text, scores) {
     <div class="final-header" onclick="toggleFinalCard()" style="cursor:pointer">
       <span>Final Resume ${scoreMini}</span>
       <div class="final-header-actions">
-        <button class="copy-btn" id="copyFinalBtn" onclick="event.stopPropagation()">Copy to clipboard</button>
+        <button class="diff-btn" id="diffBtn" onclick="event.stopPropagation();toggleDiff()">⇄ Diff</button>
+        <button class="copy-btn" id="copyFinalBtn" onclick="event.stopPropagation()">Copy</button>
         <svg id="finalChevron" class="final-chevron open" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
     </div>
     <div id="finalBody">
       ${renderScoreCard(scores)}
-      <div class="final-text" id="finalText">${renderMarkdown(text)}</div>
+      <div id="resumeView">
+        <div class="final-text" id="finalText">${renderMarkdown(text)}</div>
+      </div>
+      <div id="diffView" style="display:none">
+        ${renderDiffView(_state.safeResume, text)}
+      </div>
+      <div class="final-actions">
+        <button class="action-btn" onclick="generateCoverLetter()">✉ Cover Letter</button>
+        <button class="action-btn" onclick="generateInterviewPrep()">&#127919; Interview Prep</button>
+      </div>
     </div>`;
   pipeline.appendChild(div);
-  document.getElementById('copyFinalBtn').onclick = () => {
+  document.getElementById('copyFinalBtn').onclick = (e) => {
+    e.stopPropagation();
     navigator.clipboard.writeText(text).then(() => {
       const btn = document.getElementById('copyFinalBtn');
       btn.textContent = 'Copied!';
-      setTimeout(() => btn.textContent = 'Copy to clipboard', 2000);
+      setTimeout(() => btn.textContent = 'Copy', 2000);
     });
   };
 }
@@ -841,4 +870,173 @@ function toggleFinalCard() {
   const hidden  = body.style.display === 'none';
   body.style.display    = hidden ? '' : 'none';
   chevron.style.transform = hidden ? '' : 'rotate(-90deg)';
+}
+
+// ── Diff view ────────────────────────────────────────────────────────────────
+
+function computeLineDiff(a, b) {
+  const al = a.split('\n'), bl = b.split('\n');
+  const m = al.length, n = bl.length;
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = al[i-1].trim() === bl[j-1].trim()
+        ? dp[i-1][j-1] + 1
+        : Math.max(dp[i-1][j], dp[i][j-1]);
+
+  const result = [];
+  let i = m, j = n;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && al[i-1].trim() === bl[j-1].trim()) {
+      result.unshift({ type: 'same', text: bl[j-1] }); i--; j--;
+    } else if (j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) {
+      result.unshift({ type: 'added',   text: bl[j-1] }); j--;
+    } else {
+      result.unshift({ type: 'removed', text: al[i-1] }); i--;
+    }
+  }
+  return result;
+}
+
+function renderDiffView(original, final) {
+  const diff = computeLineDiff(original, final);
+
+  const leftHtml = diff
+    .filter(d => d.type !== 'added')
+    .map(d => {
+      const cls = d.type === 'removed' ? 'diff-removed' : 'diff-same';
+      return `<div class="diff-line ${cls}">${d.text ? escHtml(d.text) : ' '}</div>`;
+    }).join('');
+
+  const rightHtml = diff
+    .filter(d => d.type !== 'removed')
+    .map(d => {
+      const cls = d.type === 'added' ? 'diff-added' : 'diff-same';
+      return `<div class="diff-line ${cls}">${d.text ? escHtml(d.text) : ' '}</div>`;
+    }).join('');
+
+  return `
+    <div class="diff-view">
+      <div class="diff-col">
+        <div class="diff-panel-header">Original</div>
+        <div class="diff-panel">${leftHtml}</div>
+      </div>
+      <div class="diff-col">
+        <div class="diff-panel-header">Optimized</div>
+        <div class="diff-panel">${rightHtml}</div>
+      </div>
+    </div>`;
+}
+
+function toggleDiff() {
+  const resumeView = document.getElementById('resumeView');
+  const diffView   = document.getElementById('diffView');
+  const btn        = document.getElementById('diffBtn');
+  const inDiff     = diffView.style.display !== 'none';
+  resumeView.style.display = inDiff ? '' : 'none';
+  diffView.style.display   = inDiff ? 'none' : '';
+  btn.classList.toggle('active', !inDiff);
+}
+
+// ── Cover letter & interview prep ─────────────────────────────────────────────
+
+function pCoverLetter(finalResume, jd) {
+  return `You are a professional career writer. Write a compelling, tailored cover letter.
+
+Rules:
+- Exactly 3 paragraphs, 200–250 words total
+- Paragraph 1 (2 sentences): Hook — why this specific role at this specific company matters to you
+- Paragraph 2 (3–4 sentences): 2–3 strongest relevant accomplishments tied to specific job requirements, with numbers
+- Paragraph 3 (2 sentences): What you bring + clear call to action
+- No generic openers ("I am writing to apply for...", "I am excited to apply...")
+- No filler phrases ("great fit", "passionate about", "team player")
+- Use specific metrics and achievements from the resume
+- Output ONLY the cover letter body text — no subject line, date, address, or salutation labels
+
+--- RESUME ---
+${finalResume}
+
+--- JOB DESCRIPTION ---
+${jd}`;
+}
+
+function pInterviewPrep(finalResume, jd) {
+  return `You are a FAANG-level interview coach. Generate targeted interview prep from the resume and job description below.
+
+Produce exactly 8 questions with talking points:
+- 2 behavioral (STAR format) based on specific experiences from this resume
+- 3 technical/skills questions drawn directly from the JD requirements
+- 2 deep-dive questions on the candidate's strongest projects or achievements
+- 1 "Why this role / Why this company" question
+
+For each question use this format:
+**Q: [Question]**
+Talking points:
+• [Specific point referencing resume content]
+• [Specific point referencing resume content]
+• [Specific point referencing resume content]
+
+Be specific — reference actual accomplishments, skills, and metrics from the resume. No generic questions.
+
+--- RESUME ---
+${finalResume}
+
+--- JOB DESCRIPTION ---
+${jd}`;
+}
+
+async function _streamToOutputCard(cardId, title, bodyId, messages) {
+  const stepsPane = document.getElementById('stepsPane');
+  if (!stepsPane) { alert('Run the pipeline first.'); return; }
+
+  document.getElementById(cardId)?.remove();
+  const card = document.createElement('div');
+  card.className = 'output-card';
+  card.id = cardId;
+  card.innerHTML = `
+    <div class="output-header">
+      <span>${escHtml(title)}</span>
+      <small id="${bodyId}-status"><span class="spinner"></span>Writing…</small>
+    </div>
+    <div class="output-body" id="${bodyId}"></div>`;
+  stepsPane.appendChild(card);
+  stepsPane.scrollTo({ top: stepsPane.scrollHeight, behavior: 'smooth' });
+
+  const actionBtns = document.querySelectorAll('.action-btn');
+  actionBtns.forEach(b => b.disabled = true);
+
+  try {
+    await callClaude(messages, t => {
+      const el = document.getElementById(bodyId);
+      if (el) {
+        el.textContent += t;
+        stepsPane.scrollTo({ top: stepsPane.scrollHeight, behavior: 'smooth' });
+      }
+    });
+    const statusEl = document.getElementById(`${bodyId}-status`);
+    if (statusEl) statusEl.textContent = 'Done';
+  } catch (err) {
+    const statusEl = document.getElementById(`${bodyId}-status`);
+    if (statusEl) statusEl.textContent = '✗ Error';
+    const bodyEl = document.getElementById(bodyId);
+    if (bodyEl) bodyEl.textContent += `\n\nError: ${err.message}`;
+  } finally {
+    actionBtns.forEach(b => b.disabled = false);
+  }
+}
+
+async function generateCoverLetter() {
+  if (!_finalResume) { alert('Run the pipeline first.'); return; }
+  await _streamToOutputCard(
+    'coverLetterCard', 'Cover Letter', 'coverLetterBody',
+    [{ role: 'user', content: pCoverLetter(_finalResume, _state.jd) }]
+  );
+}
+
+async function generateInterviewPrep() {
+  if (!_finalResume) { alert('Run the pipeline first.'); return; }
+  await _streamToOutputCard(
+    'interviewPrepCard', 'Interview Prep', 'interviewPrepBody',
+    [{ role: 'user', content: pInterviewPrep(_finalResume, _state.jd) }]
+  );
 }

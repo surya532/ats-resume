@@ -58,6 +58,18 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Each completed step can be expanded/collapsed. If a step fails, a **Retry from this step** button appears — no need to rerun the full pipeline.
 
+### Diff view
+
+Click **⇄ Diff** in the final card header to toggle a side-by-side view: original resume on the left (removed/changed lines in red), optimized on the right (added/changed lines in green).
+
+### Cover letter
+
+Click **✉ Cover Letter** in the action bar below the final resume to generate a tailored 3-paragraph cover letter (200–250 words) using specific metrics from your resume and the JD. Output streams into the steps pane.
+
+### Interview prep
+
+Click **🎯 Interview Prep** to generate 8 targeted questions with talking points: 2 behavioral (STAR), 3 technical from the JD, 2 deep-dives on your strongest achievements, and 1 "why this role" question. Output streams into the steps pane.
+
 ### Generate bullets
 
 Click **Generate bullets to fill space** to create XYZ/CAR-formatted bullets for any experience you describe. Each bullet has its own copy button.
