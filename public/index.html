@@ -517,6 +517,19 @@
     ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
+    /* ── Quick action buttons (left panel) ── */
+    .quick-actions { display: flex; gap: 8px; }
+    .quick-btn {
+      flex: 1; background: transparent;
+      border: 1px dashed var(--border2); border-radius: 8px;
+      color: var(--muted); font-size: 11.5px; font-weight: 500;
+      padding: 9px 8px; cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+    .quick-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent2); }
+    .quick-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
     /* ── Diff view ── */
     .diff-view {
       display: flex; border-top: 1px solid var(--border);
@@ -696,6 +709,19 @@
           </div>
           <button class="gen-btn" id="genBtn" onclick="generateBullets()">Generate</button>
         </div>
+      </div>
+
+      <div class="divider">or generate standalone</div>
+
+      <div class="quick-actions">
+        <button class="quick-btn" id="quickCoverBtn" onclick="generateCoverLetter()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          Cover Letter
+        </button>
+        <button class="quick-btn" id="quickInterviewBtn" onclick="generateInterviewPrep()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Interview Prep
+        </button>
       </div>
 
     </div><!-- /inputs -->

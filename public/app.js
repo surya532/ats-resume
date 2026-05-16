@@ -1002,8 +1002,8 @@ async function _streamToOutputCard(cardId, title, bodyId, messages) {
   stepsPane.appendChild(card);
   stepsPane.scrollTo({ top: stepsPane.scrollHeight, behavior: 'smooth' });
 
-  const actionBtns = document.querySelectorAll('.action-btn');
-  actionBtns.forEach(b => b.disabled = true);
+  const genBtns = document.querySelectorAll('.action-btn, .quick-btn');
+  genBtns.forEach(b => b.disabled = true);
 
   try {
     await callClaude(messages, t => {
@@ -1021,22 +1021,28 @@ async function _streamToOutputCard(cardId, title, bodyId, messages) {
     const bodyEl = document.getElementById(bodyId);
     if (bodyEl) bodyEl.textContent += `\n\nError: ${err.message}`;
   } finally {
-    actionBtns.forEach(b => b.disabled = false);
+    genBtns.forEach(b => b.disabled = false);
   }
 }
 
 async function generateCoverLetter() {
-  if (!_finalResume) { alert('Run the pipeline first.'); return; }
+  const resume = _finalResume || redact(getResumeText());
+  const jd     = _state.jd   || jdEl.value.trim();
+  if (!resume) { alert('Please upload a resume or paste your resume text.'); return; }
+  if (!jd)     { alert('Please paste the job description.'); return; }
   await _streamToOutputCard(
     'coverLetterCard', 'Cover Letter', 'coverLetterBody',
-    [{ role: 'user', content: pCoverLetter(_finalResume, _state.jd) }]
+    [{ role: 'user', content: pCoverLetter(resume, jd) }]
   );
 }
 
 async function generateInterviewPrep() {
-  if (!_finalResume) { alert('Run the pipeline first.'); return; }
+  const resume = _finalResume || redact(getResumeText());
+  const jd     = _state.jd   || jdEl.value.trim();
+  if (!resume) { alert('Please upload a resume or paste your resume text.'); return; }
+  if (!jd)     { alert('Please paste the job description.'); return; }
   await _streamToOutputCard(
     'interviewPrepCard', 'Interview Prep', 'interviewPrepBody',
-    [{ role: 'user', content: pInterviewPrep(_finalResume, _state.jd) }]
+    [{ role: 'user', content: pInterviewPrep(resume, jd) }]
   );
 }

@@ -62,7 +62,7 @@ All pipeline prompts enforce: same bullet count per role as input — rewrite to
 
 **Diff view** — `computeLineDiff(a, b)` runs an LCS DP on both resumes split into lines, producing `{ type: 'same'|'added'|'removed', text }` entries. `renderDiffView()` renders two side-by-side panels: left shows original (removed lines in red), right shows optimized (added lines in green). `toggleDiff()` switches `#resumeView` / `#diffView` visibility and toggles `.active` on `#diffBtn`.
 
-**Cover letter / Interview prep** — `_streamToOutputCard(cardId, title, bodyId, messages)` is a shared helper that creates an `.output-card` in `stepsPane`, streams a `callClaude()` response into it, and disables all `.action-btn` elements during generation. `generateCoverLetter()` and `generateInterviewPrep()` call it with `_finalResume` (module-level, set in `showFinal()`) and `_state.jd`.
+**Cover letter / Interview prep** — `_streamToOutputCard(cardId, title, bodyId, messages)` is a shared helper that creates an `.output-card` in `stepsPane`, streams a `callClaude()` response into it, and disables all `.action-btn, .quick-btn` elements during generation. `generateCoverLetter()` and `generateInterviewPrep()` are available both as `.quick-btn` in the left panel (always accessible) and as `.action-btn` in the final card (post-pipeline). Both resolve the resume as `_finalResume || redact(getResumeText())` and JD as `_state.jd || jdEl.value.trim()` — the pipeline is not required.
 
 ## Environment
 

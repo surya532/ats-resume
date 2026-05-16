@@ -64,11 +64,11 @@ Click **⇄ Diff** in the final card header to toggle a side-by-side view: origi
 
 ### Cover letter
 
-Click **✉ Cover Letter** in the action bar below the final resume to generate a tailored 3-paragraph cover letter (200–250 words) using specific metrics from your resume and the JD. Output streams into the steps pane.
+Click **✉ Cover Letter** — available in the left panel at any time, or in the action bar below the final resume after the pipeline runs. Generates a tailored 3-paragraph cover letter (200–250 words) using specific metrics from your resume and the JD. If the pipeline has run, uses the optimized resume; otherwise uses the raw resume. Output streams into the steps pane.
 
 ### Interview prep
 
-Click **🎯 Interview Prep** to generate 8 targeted questions with talking points: 2 behavioral (STAR), 3 technical from the JD, 2 deep-dives on your strongest achievements, and 1 "why this role" question. Output streams into the steps pane.
+Click **🎯 Interview Prep** — same availability as Cover Letter above. Generates 8 targeted questions with talking points: 2 behavioral (STAR), 3 technical from the JD, 2 deep-dives on your strongest achievements, and 1 "why this role" question. Output streams into the steps pane.
 
 ### Generate bullets
 
