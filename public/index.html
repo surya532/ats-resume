@@ -11,24 +11,24 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:          #0b0b0e;
-      --surface:     #141418;
-      --surface2:    #1c1c22;
-      --surface3:    #242430;
-      --border:      #242430;
-      --border2:     #30303c;
-      --text:        #ececf4;
-      --text2:       #9898ac;
-      --muted:       #55556a;
-      --accent:      #7c6af7;
-      --accent2:     #a594f9;
-      --accent3:     #5a4ae0;
-      --accent-dim:  #252050;
-      --accent-glow: rgba(124,106,247,0.18);
-      --success:     #34d399;
-      --success-dim: #0c2a1e;
-      --error:       #f87171;
-      --error-dim:   #2a0e0e;
+      --bg:          #0d0c12;
+      --surface:     #131219;
+      --surface2:    #1a1925;
+      --surface3:    #222132;
+      --border:      #252338;
+      --border2:     #312f46;
+      --text:        #eeeef6;
+      --text2:       #9a98b4;
+      --muted:       #56547a;
+      --accent:      #8b5cf6;
+      --accent2:     #a78bfa;
+      --accent3:     #7c3aed;
+      --accent-dim:  #2e1d5e;
+      --accent-glow: rgba(139,92,246,0.16);
+      --success:     #2dd4a0;
+      --success-dim: #0b2820;
+      --error:       #fb7185;
+      --error-dim:   #2d0f18;
       --warning:     #fbbf24;
       --radius-sm:   6px;
       --radius:      10px;
@@ -55,7 +55,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: linear-gradient(90deg, #0b0b0e 0%, #110e1f 50%, #0b0b0e 100%);
+      background: linear-gradient(90deg, #0d0c12 0%, #130f22 50%, #0d0c12 100%);
       border-bottom: 1px solid var(--border);
       position: relative;
       z-index: 10;
@@ -64,7 +64,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse 60% 100% at 50% 0%, rgba(124,106,247,0.08) 0%, transparent 100%);
+      background: radial-gradient(ellipse 60% 100% at 50% 0%, rgba(139,92,246,0.08) 0%, transparent 100%);
       pointer-events: none;
     }
 
@@ -74,7 +74,7 @@
       background: linear-gradient(135deg, var(--accent3), var(--accent2));
       border-radius: var(--radius-sm);
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 2px 10px rgba(124,106,247,0.4);
+      box-shadow: 0 2px 10px rgba(139,92,246,0.4);
     }
     .header-icon svg { color: #fff; }
     .header-brand { display: flex; flex-direction: column; gap: 1px; }
@@ -204,7 +204,7 @@
       transition: border-color 0.2s, background 0.2s;
     }
     .upload-zone:hover, .upload-zone.drag {
-      border-color: var(--accent); background: rgba(124,106,247,0.05);
+      border-color: var(--accent); background: rgba(139,92,246,0.05);
     }
     .upload-icon {
       width: 40px; height: 40px; border-radius: 50%;
@@ -265,16 +265,16 @@
       color: #fff; border: none; border-radius: var(--radius);
       padding: 13px; font-size: 13px; font-weight: 700; font-family: inherit;
       cursor: pointer; letter-spacing: 0.01em;
-      box-shadow: 0 2px 16px rgba(124,106,247,0.35);
+      box-shadow: 0 2px 16px rgba(139,92,246,0.35);
       display: flex; align-items: center; justify-content: center; gap: 8px;
       transition: opacity 0.15s, transform 0.12s, box-shadow 0.15s, background-position 0.4s;
     }
     .run-btn:hover:not(:disabled) {
       background-position: 100% 0;
       transform: translateY(-1px);
-      box-shadow: 0 6px 22px rgba(124,106,247,0.45);
+      box-shadow: 0 6px 22px rgba(139,92,246,0.45);
     }
-    .run-btn:active:not(:disabled) { transform: translateY(0); box-shadow: 0 2px 10px rgba(124,106,247,0.3); }
+    .run-btn:active:not(:disabled) { transform: translateY(0); box-shadow: 0 2px 10px rgba(139,92,246,0.3); }
     .run-btn:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
 
     /* ── Dividers ── */
@@ -296,7 +296,7 @@
       transition: border-color 0.15s, color 0.15s, background 0.15s;
     }
     .gen-toggle:hover { border-color: var(--accent); color: var(--accent2); }
-    .gen-toggle.open  { border-color: var(--accent); color: var(--accent2); border-style: solid; background: rgba(124,106,247,0.04); }
+    .gen-toggle.open  { border-color: var(--accent); color: var(--accent2); border-style: solid; background: rgba(139,92,246,0.04); }
     .gen-toggle svg   { transition: transform 0.2s; }
     .gen-toggle.open svg { transform: rotate(45deg); }
 
@@ -319,28 +319,44 @@
     .gen-count:focus { outline: none; border-color: var(--accent); }
     .gen-btn {
       flex: 1; background: var(--accent-dim); color: var(--accent2);
-      border: 1px solid rgba(124,106,247,0.4); border-radius: var(--radius-sm);
+      border: 1px solid rgba(139,92,246,0.4); border-radius: var(--radius-sm);
       padding: 8px; font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer;
       transition: opacity 0.15s;
     }
     .gen-btn:hover:not(:disabled) { opacity: 0.8; }
     .gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* ── Quick action buttons ── */
-    .quick-actions { display: flex; gap: 8px; }
-    .quick-btn {
-      flex: 1; background: transparent;
-      border: 1px dashed var(--border2); border-radius: var(--radius);
-      color: var(--muted); font-size: 11px; font-weight: 500; font-family: inherit;
-      padding: 9px 8px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 5px;
-      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    /* ── Quick tool cards ── */
+    .tool-cards { display: flex; flex-direction: column; gap: 8px; }
+    .tool-card {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 13px; width: 100%; text-align: left; font-family: inherit;
+      background: var(--surface2); border: 1px solid var(--border2);
+      border-radius: var(--radius); cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, transform 0.12s;
     }
-    .quick-btn:hover:not(:disabled) {
-      border-color: var(--accent); color: var(--accent2);
-      background: rgba(124,106,247,0.04); border-style: solid;
+    .tool-card:hover:not(:disabled) {
+      border-color: var(--accent); background: rgba(139,92,246,0.07);
+      transform: translateX(2px);
     }
-    .quick-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .tool-card:disabled { opacity: 0.4; cursor: not-allowed; }
+    .tool-card-icon {
+      width: 36px; height: 36px; border-radius: var(--radius-sm); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 17px;
+    }
+    .tool-card-icon.tci-cover     { background: rgba(56,189,248,0.12); }
+    .tool-card-icon.tci-interview { background: rgba(251,146,60,0.12); }
+    .tool-card-body { flex: 1; min-width: 0; }
+    .tool-card-title { font-size: 12.5px; font-weight: 700; color: var(--text); }
+    .tool-card-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+    .tool-card-arrow {
+      color: var(--muted); flex-shrink: 0;
+      transition: transform 0.15s, color 0.15s;
+    }
+    .tool-card:hover .tool-card-arrow { transform: translateX(3px); color: var(--accent2); }
+
+    /* Keep .quick-btn as alias for JS disabled targeting */
+    .quick-btn { display: none; }
 
     /* ── Right panel ───────────────────────────────────────────────────── */
     .pipeline { flex: 1; display: flex; flex-direction: column; min-height: 0; background: var(--bg); }
@@ -361,7 +377,7 @@
       width: 56px; height: 56px; border-radius: 16px;
       background: linear-gradient(135deg, var(--accent3), var(--accent2));
       display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 14px; box-shadow: 0 4px 20px rgba(124,106,247,0.3);
+      margin: 0 auto 14px; box-shadow: 0 4px 20px rgba(139,92,246,0.3);
     }
     .empty-icon-wrap svg { color: #fff; }
     .empty-hero h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
@@ -403,7 +419,7 @@
     .step-card.running {
       border-color: var(--border2);
       border-left-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(124,106,247,0.15), 0 4px 20px rgba(124,106,247,0.08);
+      box-shadow: 0 0 0 1px rgba(139,92,246,0.15), 0 4px 20px rgba(139,92,246,0.08);
     }
     .step-card.done  { border-left-color: var(--success); }
     .step-card.error { border-left-color: var(--error); }
@@ -445,7 +461,7 @@
       font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
       padding: 2px 8px; border-radius: 20px; flex-shrink: 0;
     }
-    .tag-purple { background: rgba(124,106,247,0.15); color: var(--accent2); border: 1px solid rgba(124,106,247,0.3); }
+    .tag-purple { background: rgba(139,92,246,0.15); color: var(--accent2); border: 1px solid rgba(139,92,246,0.3); }
     .tag-blue   { background: rgba(56,189,248,0.12);  color: #67d4f8; border: 1px solid rgba(56,189,248,0.25); }
     .tag-teal   { background: rgba(52,211,153,0.12);  color: #5eeab8; border: 1px solid rgba(52,211,153,0.25); }
     .tag-orange { background: rgba(251,146,60,0.12);  color: #fdba74; border: 1px solid rgba(251,146,60,0.25); }
@@ -462,7 +478,7 @@
       white-space: nowrap; transition: all 0.2s;
       display: flex; align-items: center; gap: 4px;
     }
-    .step-card.running .step-badge { color: var(--accent2); border-color: rgba(124,106,247,0.4); background: var(--accent-dim); }
+    .step-card.running .step-badge { color: var(--accent2); border-color: rgba(139,92,246,0.4); background: var(--accent-dim); }
     .step-card.done    .step-badge { color: var(--success);  border-color: rgba(52,211,153,0.3); background: var(--success-dim); }
     .step-card.error   .step-badge { color: var(--error);    border-color: rgba(248,113,113,0.3); background: var(--error-dim); }
 
@@ -489,26 +505,26 @@
     /* ── Final resume card ─────────────────────────────────────────────── */
     .final-card {
       background: var(--surface);
-      border: 1px solid rgba(124,106,247,0.25);
+      border: 1px solid rgba(139,92,246,0.25);
       border-top: 2px solid var(--accent);
       border-radius: var(--radius-lg) var(--radius-lg) 0 0;
       overflow: hidden; flex-shrink: 0;
       margin: 0 16px;
-      box-shadow: 0 -6px 30px rgba(124,106,247,0.08);
+      box-shadow: 0 -6px 30px rgba(139,92,246,0.08);
     }
     .final-header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 12px 16px; border-bottom: 1px solid var(--border);
       user-select: none; cursor: pointer;
-      background: linear-gradient(90deg, rgba(124,106,247,0.07) 0%, transparent 100%);
+      background: linear-gradient(90deg, rgba(139,92,246,0.07) 0%, transparent 100%);
     }
-    .final-header:hover { background: linear-gradient(90deg, rgba(124,106,247,0.1) 0%, transparent 100%); }
+    .final-header:hover { background: linear-gradient(90deg, rgba(139,92,246,0.1) 0%, transparent 100%); }
     .final-header-left {
       display: flex; align-items: center; gap: 9px;
     }
     .final-doc-icon {
       width: 28px; height: 28px; border-radius: var(--radius-sm);
-      background: var(--accent-dim); border: 1px solid rgba(124,106,247,0.3);
+      background: var(--accent-dim); border: 1px solid rgba(139,92,246,0.3);
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .final-doc-icon svg { color: var(--accent2); }
@@ -563,7 +579,7 @@
     .score-card {
       display: flex; align-items: center; gap: 24px;
       padding: 14px 20px; border-bottom: 1px solid var(--border);
-      background: linear-gradient(90deg, rgba(124,106,247,0.05) 0%, transparent 80%);
+      background: linear-gradient(90deg, rgba(139,92,246,0.05) 0%, transparent 80%);
     }
     .score-overall { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
     .score-col { text-align: center; }
@@ -675,7 +691,7 @@
     /* ── Spinner ── */
     .spinner {
       display: inline-block; width: 9px; height: 9px;
-      border: 1.5px solid rgba(124,106,247,0.3); border-top-color: var(--accent2);
+      border: 1.5px solid rgba(139,92,246,0.3); border-top-color: var(--accent2);
       border-radius: 50%; animation: spin 0.65s linear infinite;
       vertical-align: middle;
     }
@@ -862,26 +878,31 @@
         </div>
       </div>
 
-      <!-- Standalone generate -->
+      <!-- Quick Generate -->
       <div class="panel-section">
         <div class="section-label">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
-          Generate Standalone
+          Quick Generate
+          <span style="font-weight:400;text-transform:none;font-size:10px;margin-left:auto;color:var(--muted)">no pipeline needed</span>
         </div>
-        <div class="quick-actions">
-          <button class="quick-btn" id="quickCoverBtn" onclick="generateCoverLetter()">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-            </svg>
-            Cover Letter
+        <div class="tool-cards">
+          <button class="tool-card" id="quickCoverBtn" onclick="generateCoverLetter()">
+            <div class="tool-card-icon tci-cover">✉</div>
+            <div class="tool-card-body">
+              <div class="tool-card-title">Cover Letter</div>
+              <div class="tool-card-desc">AI-tailored 3-paragraph letter matching your resume to the JD</div>
+            </div>
+            <svg class="tool-card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
-          <button class="quick-btn" id="quickInterviewBtn" onclick="generateInterviewPrep()">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-            </svg>
-            Interview Prep
+          <button class="tool-card" id="quickInterviewBtn" onclick="generateInterviewPrep()">
+            <div class="tool-card-icon tci-interview">🎯</div>
+            <div class="tool-card-body">
+              <div class="tool-card-title">Interview Prep</div>
+              <div class="tool-card-desc">8 questions with STAR talking points based on your resume + role</div>
+            </div>
+            <svg class="tool-card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
       </div>
@@ -907,7 +928,7 @@
                 <div class="empty-step-num">1</div>
                 <div class="empty-step-name">RISEN</div>
               </div>
-              <div class="empty-step-tag" style="background:rgba(124,106,247,0.12);color:#a594f9;border-color:rgba(124,106,247,0.25)">Rewrite</div>
+              <div class="empty-step-tag" style="background:rgba(139,92,246,0.12);color:#a78bfa;border-color:rgba(139,92,246,0.25)">Rewrite</div>
               <div class="empty-step-desc">Full 7-step recruiter rewrite</div>
             </div>
             <div class="empty-step-card">

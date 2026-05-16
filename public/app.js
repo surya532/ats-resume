@@ -1032,7 +1032,7 @@ async function _streamToOutputCard(cardId, title, bodyId, messages) {
   stepsPane.appendChild(card);
   stepsPane.scrollTo({ top: stepsPane.scrollHeight, behavior: 'smooth' });
 
-  const genBtns = document.querySelectorAll('.action-btn, .quick-btn');
+  const genBtns = document.querySelectorAll('.action-btn, .tool-card');
   genBtns.forEach(b => b.disabled = true);
 
   try {
