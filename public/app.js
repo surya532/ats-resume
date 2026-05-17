@@ -875,6 +875,7 @@ function showFinal(text, scores) {
       <div class="final-actions">
         <button class="action-btn" onclick="generateCoverLetter()">✉ Cover Letter</button>
         <button class="action-btn" onclick="generateInterviewPrep()">&#127919; Interview Prep</button>
+        <button class="action-btn" onclick="generateLinkedIn()">in LinkedIn</button>
       </div>
     </div>`;
   stepsPane.appendChild(div);
@@ -1066,5 +1067,47 @@ async function generateInterviewPrep() {
   await _streamToOutputCard(
     'interviewPrepCard', 'Interview Prep', 'interviewPrepBody',
     [{ role: 'user', content: pInterviewPrep(resume, jd) }]
+  );
+}
+
+function pLinkedIn(resume, jd) {
+  return `You are a LinkedIn profile specialist who has helped thousands of professionals land roles at top companies.
+
+Resume:
+${resume}
+
+Target job description:
+${jd}
+
+Write two things:
+
+## LINKEDIN ABOUT SECTION
+Write a 3-paragraph About section (~1500 characters) that:
+- Opens with a compelling hook — NOT "I am" or "Passionate about" or "Results-driven"
+- Paragraph 1: Who you are and what you do best, anchored by a key metric or achievement from the resume
+- Paragraph 2: Core expertise and 2–3 specific accomplishments with numbers, aligned to the target role
+- Paragraph 3: What you're currently focused on / looking for, naturally weaving in 2–3 keywords from the JD
+- First person, confident and natural — not corporate or buzzword-heavy
+- No emojis, no bullet points
+
+## LINKEDIN HEADLINES — 3 OPTIONS
+Write 3 distinct headline variants (max 120 characters each):
+Option 1 — Role + specialty + impact (directly targets the JD)
+Option 2 — Achievement-led (opens with a metric or outcome)
+Option 3 — Broader identity (works across similar roles in the field)
+
+Label each "Option 1:", "Option 2:", "Option 3:" on its own line.
+
+Use only information present in the resume. Do not invent titles, companies, or metrics.`;
+}
+
+async function generateLinkedIn() {
+  const resume = _finalResume || redact(getResumeText());
+  const jd     = _state.jd   || jdEl.value.trim();
+  if (!resume) { alert('Please upload a resume or paste your resume text.'); return; }
+  if (!jd)     { alert('Please paste the job description.'); return; }
+  await _streamToOutputCard(
+    'linkedinCard', 'LinkedIn Profile', 'linkedinBody',
+    [{ role: 'user', content: pLinkedIn(resume, jd) }]
   );
 }

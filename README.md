@@ -70,6 +70,10 @@ Click **✉ Cover Letter** — available in the left panel at any time, or in th
 
 Click **🎯 Interview Prep** — same availability as Cover Letter above. Generates 8 targeted questions with talking points: 2 behavioral (STAR), 3 technical from the JD, 2 deep-dives on your strongest achievements, and 1 "why this role" question. Output streams into the steps pane.
 
+### LinkedIn profile
+
+Click **LinkedIn** — available in the action bar at any time, or below the final resume after the pipeline runs. Generates a LinkedIn About section (~1500 characters, 3 paragraphs) and 3 headline variants with different angles: role-targeted, achievement-led, and broad career identity. If the pipeline has run, uses the optimized resume; otherwise uses the raw resume.
+
 ### Generate bullets
 
 Click **Generate bullets to fill space** to create XYZ/CAR-formatted bullets for any experience you describe. Each bullet has its own copy button.

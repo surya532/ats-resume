@@ -53,6 +53,7 @@ All prompt functions in `app.js` prefixed with `p`:
 | `pAtsScore` | ATS Score | Scores original vs optimized on 4 categories, outputs `<ats>` JSON |
 | `pCoverLetter` | — | 3-paragraph tailored cover letter, 200–250 words, no filler phrases |
 | `pInterviewPrep` | — | 8 questions with talking points (behavioral, technical, deep-dive, why-us) |
+| `pLinkedIn` | — | LinkedIn About (~1500 chars, 3 paras) + 3 headline variants (role-targeted, achievement-led, broad identity) |
 
 Each pipeline prompt instructs the model to wrap resume output in `<resume>…</resume>` tags. `extractResume()` parses those tags; falls back to full text if absent.
 
@@ -70,7 +71,7 @@ All pipeline prompts enforce: same bullet count per role as input — rewrite to
 
 **Diff view** — `computeLineDiff(a, b)` runs an LCS DP on both resumes split into lines, producing `{ type: 'same'|'added'|'removed', text }` entries. `renderDiffView()` renders two side-by-side panels: left shows original (removed lines in red), right shows optimized (added lines in green). `toggleDiff()` switches `#resumeView` / `#diffView` visibility and toggles `.active` on `#diffBtn`.
 
-**Cover letter / Interview prep** — `_streamToOutputCard(cardId, title, bodyId, messages)` creates an `.output-card` in `stepsPane`, streams a `callClaude()` response into it, and disables all `.action-btn, .act-primary, .act-btn` elements during generation. `generateCoverLetter()` and `generateInterviewPrep()` are triggered from the action bar (always accessible) or from the final card. Both resolve the resume as `_finalResume || redact(getResumeText())` and JD as `_state.jd || jdEl.value.trim()` — the pipeline is not required.
+**Cover letter / Interview prep / LinkedIn** — `_streamToOutputCard(cardId, title, bodyId, messages)` creates an `.output-card` in `stepsPane`, streams a `callClaude()` response into it, and disables all `.action-btn, .act-primary, .act-btn` elements during generation. `generateCoverLetter()`, `generateInterviewPrep()`, and `generateLinkedIn()` are triggered from the action bar (always accessible, `id="quickCoverBtn"` / `id="quickInterviewBtn"` / `id="quickLinkedInBtn"`) or from the final card. All three resolve the resume as `_finalResume || redact(getResumeText())` and JD as `_state.jd || jdEl.value.trim()` — the pipeline is not required.
 
 ## Environment
 
