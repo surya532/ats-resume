@@ -120,7 +120,32 @@
       display: flex; flex-direction: column; gap: 10px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
+      position: relative;
     }
+
+    /* Expand / collapse toggle */
+    .expand-btn {
+      position: absolute; top: 10px; right: 14px;
+      width: 26px; height: 26px;
+      background: transparent; border: 1px solid var(--border2);
+      border-radius: var(--radius-sm); color: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; z-index: 2;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .expand-btn:hover, .expand-btn.active {
+      border-color: var(--accent); color: var(--accent2); background: var(--accent-dim);
+    }
+
+    /* Full-screen input mode */
+    body.inputs-full .top-section  { flex: 1; overflow: hidden; }
+    body.inputs-full .steps-pane   { display: none; }
+    body.inputs-full .inputs-row   { flex: 1; min-height: 0; }
+    body.inputs-full .input-card   { flex: 1; }
+    body.inputs-full .input-card-body { flex: 1; overflow: hidden; }
+    body.inputs-full .input-card-body textarea { flex: 1; min-height: 0; resize: none !important; }
+    body.inputs-full .tab-panel.active { flex: 1; display: flex; flex-direction: column; }
+    body.inputs-full .upload-zone  { flex: 1; justify-content: center; }
 
     .inputs-row { display: flex; gap: 10px; }
 
@@ -308,30 +333,6 @@
     .empty-icon-wrap svg { color: #fff; }
     .empty-hero h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
     .empty-hero p  { font-size: 12.5px; color: var(--text2); line-height: 1.6; max-width: 320px; }
-
-    .empty-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-      width: 100%; max-width: 560px;
-    }
-    .empty-step-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 12px;
-      display: flex; flex-direction: column; gap: 5px;
-    }
-    .empty-step-top { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
-    .empty-step-num {
-      width: 22px; height: 22px; border-radius: 50%;
-      background: var(--surface2); border: 1px solid var(--border2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 9.5px; font-weight: 700; flex-shrink: 0; color: var(--muted);
-    }
-    .empty-step-name { font-size: 12px; font-weight: 700; color: var(--text2); }
-    .empty-step-desc { font-size: 10.5px; color: var(--muted); line-height: 1.4; }
-    .empty-step-tag  {
-      display: inline-block; font-size: 9px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.06em; padding: 2px 7px; border-radius: 20px;
-      background: var(--surface2); color: var(--muted); border: 1px solid var(--border2);
-    }
 
     /* ── Step cards ───────────────────────────────────────────────────── */
     .step-card {
@@ -736,6 +737,12 @@
 
   <!-- ── Top section: inputs + action bar ───────────────────────────── -->
   <div class="top-section">
+    <button class="expand-btn" id="expandInputsBtn" onclick="toggleInputsExpand()" title="Expand inputs">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+        <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+      </svg>
+    </button>
     <div class="inputs-row">
 
       <!-- Resume card -->
@@ -873,40 +880,8 @@
             <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
         </div>
-        <h3>Ready to optimize your resume</h3>
-        <p>Upload your resume and paste a job description, then choose an action above.</p>
-      </div>
-      <div class="empty-grid">
-        <div class="empty-step-card">
-          <div class="empty-step-top"><div class="empty-step-num">1</div><div class="empty-step-name">RISEN</div></div>
-          <div class="empty-step-tag" style="background:rgba(56,189,248,0.12);color:#67d4f8;border-color:rgba(56,189,248,0.25)">Rewrite</div>
-          <div class="empty-step-desc">Full 7-step recruiter rewrite</div>
-        </div>
-        <div class="empty-step-card">
-          <div class="empty-step-top"><div class="empty-step-num">2</div><div class="empty-step-name">XYZ</div></div>
-          <div class="empty-step-tag" style="background:rgba(56,189,248,0.1);color:#67d4f8;border-color:rgba(56,189,248,0.25)">Bullets</div>
-          <div class="empty-step-desc">Bullet strength optimization</div>
-        </div>
-        <div class="empty-step-card">
-          <div class="empty-step-top"><div class="empty-step-num">3</div><div class="empty-step-name">Keywords</div></div>
-          <div class="empty-step-tag" style="background:rgba(52,211,153,0.1);color:#5eeab8;border-color:rgba(52,211,153,0.25)">Gap Fill</div>
-          <div class="empty-step-desc">Audit missing JD keywords</div>
-        </div>
-        <div class="empty-step-card">
-          <div class="empty-step-top"><div class="empty-step-num">4</div><div class="empty-step-name">CAR</div></div>
-          <div class="empty-step-tag" style="background:rgba(251,146,60,0.1);color:#fdba74;border-color:rgba(251,146,60,0.25)">Stories</div>
-          <div class="empty-step-desc">Compress narrative bullets</div>
-        </div>
-        <div class="empty-step-card">
-          <div class="empty-step-top"><div class="empty-step-num">5</div><div class="empty-step-name">Review</div></div>
-          <div class="empty-step-tag" style="background:rgba(236,72,153,0.1);color:#f0abcb;border-color:rgba(236,72,153,0.25)">Critique</div>
-          <div class="empty-step-desc">7-sec screener + self-critique</div>
-        </div>
-        <div class="empty-step-card">
-          <div class="empty-step-top"><div class="empty-step-num">6</div><div class="empty-step-name">ATS Score</div></div>
-          <div class="empty-step-tag" style="background:rgba(52,211,153,0.1);color:#34d399;border-color:rgba(52,211,153,0.25)">Score</div>
-          <div class="empty-step-desc">Before / after ATS scorecard</div>
-        </div>
+        <h3>Ready to optimize</h3>
+        <p>Paste your resume and job description above, then click <strong>Run Pipeline</strong> to start the 6-step AI optimization.</p>
       </div>
     </div>
   </div>
