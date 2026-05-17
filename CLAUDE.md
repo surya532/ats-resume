@@ -66,7 +66,7 @@ All pipeline prompts enforce: same bullet count per role as input — rewrite to
 
 **Step UI** — Each step in the `STEPS` array has `tag` and `tagCls` fields rendered as colored framework badges in `buildUI()`. Tag classes: `tag-blue` (RISEN), `tag-blue` (XYZ), `tag-teal` (Keyword Gap), `tag-orange` (CAR), `tag-pink` (Recruiter), `tag-green` (ATS Score). `setStatus()` swaps the number circle to a checkmark SVG (`CHECK_SVG`) on done, restores it on retry/error. A CSS `::after` spinning ring animates the circle when running. Header progress uses labeled `.hp-step` + `.hp-connector` structure; `:has()` CSS colors labels by dot state.
 
-**Color theme** — Midnight Gold: near-black charcoal backgrounds (`--bg: #09090c`), amber/gold accent (`--accent: #f59e0b`, `--accent2: #fcd34d`, `--accent3: #d97706`), emerald green kept only for success states (`--success: #34d399`). All CSS custom properties in `:root` — no hardcoded color values outside the tag badge classes.
+**Color theme** — Deep Slate + Indigo: near-black backgrounds with cool indigo undertone (`--bg: #0d0d12`), indigo accent (`--accent: #6366f1`, `--accent2: #818cf8`, `--accent3: #4f46e5`), emerald green kept only for success states (`--success: #34d399`). All CSS custom properties in `:root` — no hardcoded color values outside the tag badge classes.
 
 **Diff view** — `computeLineDiff(a, b)` runs an LCS DP on both resumes split into lines, producing `{ type: 'same'|'added'|'removed', text }` entries. `renderDiffView()` renders two side-by-side panels: left shows original (removed lines in red), right shows optimized (added lines in green). `toggleDiff()` switches `#resumeView` / `#diffView` visibility and toggles `.active` on `#diffBtn`.
 
