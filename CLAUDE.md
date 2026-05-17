@@ -54,6 +54,7 @@ All prompt functions in `app.js` prefixed with `p`:
 | `pCoverLetter` | — | 3-paragraph tailored cover letter, 200–250 words, no filler phrases |
 | `pInterviewPrep` | — | 8 questions with talking points (behavioral, technical, deep-dive, why-us) |
 | `pLinkedIn` | — | LinkedIn About (~1500 chars, 3 paras) + 3 headline variants (role-targeted, achievement-led, broad identity) |
+| `pOnePage` | — | Ensures resume fills exactly 1 page: adds XYZ/CAR bullets to light resumes, tightens wordiest bullets on dense ones |
 
 Each pipeline prompt instructs the model to wrap resume output in `<resume>…</resume>` tags. `extractResume()` parses those tags; falls back to full text if absent.
 
@@ -70,6 +71,8 @@ All pipeline prompts enforce: same bullet count per role as input — rewrite to
 **Color theme** — Deep Slate + Indigo: near-black backgrounds with cool indigo undertone (`--bg: #0d0d12`), indigo accent (`--accent: #6366f1`, `--accent2: #818cf8`, `--accent3: #4f46e5`), emerald green kept only for success states (`--success: #34d399`). All CSS custom properties in `:root` — no hardcoded color values outside the tag badge classes.
 
 **Diff view** — `computeLineDiff(a, b)` runs an LCS DP on both resumes split into lines, producing `{ type: 'same'|'added'|'removed', text }` entries. `renderDiffView()` renders two side-by-side panels: left shows original (removed lines in red), right shows optimized (added lines in green). `toggleDiff()` switches `#resumeView` / `#diffView` visibility and toggles `.active` on `#diffBtn`.
+
+**PDF export** — `exportPDF()` calls `pOnePage(resume, jd)` via `callClaude()` (no-op stream callback) to ensure the resume fills exactly one US Letter page, then injects the result into `#printFrame` via `renderMarkdown()`, tags the first element `.pr-name` and second `.pr-contact` for centered print styling, and calls `window.print()`. Button is `id="exportPdfBtn"` in the final card `.final-actions` row. `@media print` CSS hides all app chrome and shows only `#printFrame` with a clean professional layout. `@page` rule sets letter size with 0.65" top/bottom and 0.85" side margins.
 
 **Cover letter / Interview prep / LinkedIn** — `_streamToOutputCard(cardId, title, bodyId, messages)` creates an `.output-card` in `stepsPane`, streams a `callClaude()` response into it, and disables all `.action-btn, .act-primary, .act-btn` elements during generation. `generateCoverLetter()`, `generateInterviewPrep()`, and `generateLinkedIn()` are triggered from the action bar (always accessible, `id="quickCoverBtn"` / `id="quickInterviewBtn"` / `id="quickLinkedInBtn"`) or from the final card. All three resolve the resume as `_finalResume || redact(getResumeText())` and JD as `_state.jd || jdEl.value.trim()` — the pipeline is not required.
 

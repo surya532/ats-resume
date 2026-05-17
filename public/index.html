@@ -628,6 +628,61 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    /* ── PDF print frame ──────────────────────────────────────────────── */
+    #printFrame { display: none; }
+
+    @media print {
+      header, .top-section, .steps-pane { display: none !important; }
+      body { background: #fff; overflow: visible; height: auto; color: #000; }
+
+      #printFrame {
+        display: block !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 10.5pt;
+        line-height: 1.4;
+        color: #111;
+        background: #fff;
+      }
+
+      /* Name — first element in the frame */
+      #printFrame .pr-name {
+        font-size: 20pt; font-weight: 700; text-align: center;
+        letter-spacing: -0.02em; color: #000;
+        margin-bottom: 3pt; border: none !important;
+        text-transform: none !important;
+      }
+      /* Contact line */
+      #printFrame .pr-contact {
+        font-size: 9.5pt; text-align: center; color: #444;
+        margin-bottom: 8pt;
+      }
+
+      /* Section headers */
+      #printFrame h2 {
+        font-size: 9pt; font-weight: 700;
+        text-transform: uppercase; letter-spacing: 0.09em;
+        color: #000; border-bottom: 0.5pt solid #888;
+        padding-bottom: 2pt; margin: 9pt 0 3pt;
+      }
+      #printFrame h3 { font-size: 10.5pt; font-weight: 700; margin: 5pt 0 1pt; color: #000; }
+      #printFrame h4 { font-size: 9.5pt; font-weight: 400; color: #555; margin: 0 0 2pt; }
+
+      /* Bullets */
+      #printFrame .r-bullet {
+        padding-left: 12pt; position: relative;
+        margin-bottom: 2pt; font-size: 10pt; color: #111; line-height: 1.35;
+      }
+      #printFrame .r-bullet::before { content: '•'; position: absolute; left: 3pt; }
+
+      /* Regular lines and gaps */
+      #printFrame .r-line  { margin-bottom: 2pt; font-size: 10pt; line-height: 1.35; }
+      #printFrame .r-gap   { height: 3pt; }
+      #printFrame strong   { font-weight: 700; }
+      #printFrame hr       { border: none; border-top: 0.5pt solid #ccc; margin: 5pt 0; }
+
+      @page { size: letter; margin: 0.65in 0.85in; }
+    }
   </style>
 </head>
 <body>
@@ -855,6 +910,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Print frame: hidden normally, shown only during window.print() -->
+  <div id="printFrame" aria-hidden="true"></div>
 
   <script src="app.js"></script>
 </body>

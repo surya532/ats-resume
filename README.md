@@ -70,6 +70,17 @@ Click **✉ Cover Letter** — available in the left panel at any time, or in th
 
 Click **🎯 Interview Prep** — same availability as Cover Letter above. Generates 8 targeted questions with talking points: 2 behavioral (STAR), 3 technical from the JD, 2 deep-dives on your strongest achievements, and 1 "why this role" question. Output streams into the steps pane.
 
+### Export PDF
+
+Click **⬇ Export PDF** in the final resume card. Before printing, the app sends the resume through a 1-page fitting pass:
+- If the resume is **light** (under ~40 lines): adds 2–5 achievement bullets to the most relevant roles using XYZ/CAR format, grounded in the existing experience
+- If the resume is **dense** (over ~58 lines): tightens the wordiest bullets to under 14 words each
+- If it already fits: prints as-is
+
+The browser's Save as PDF dialog opens with a clean professional layout — name centered at top, section headers with underlines, standard bullet formatting — sized for US Letter at standard margins.
+
+> Note: personal info was redacted before the AI pipeline ran, so `[YOUR NAME]` will appear at the top of the PDF. Fill in your actual name after saving.
+
 ### LinkedIn profile
 
 Click **LinkedIn** — available in the action bar at any time, or below the final resume after the pipeline runs. Generates a LinkedIn About section (~1500 characters, 3 paragraphs) and 3 headline variants with different angles: role-targeted, achievement-led, and broad career identity. If the pipeline has run, uses the optimized resume; otherwise uses the raw resume.

@@ -876,6 +876,7 @@ function showFinal(text, scores) {
         <button class="action-btn" onclick="generateCoverLetter()">✉ Cover Letter</button>
         <button class="action-btn" onclick="generateInterviewPrep()">&#127919; Interview Prep</button>
         <button class="action-btn" onclick="generateLinkedIn()">in LinkedIn</button>
+        <button class="action-btn" id="exportPdfBtn" onclick="exportPDF()">&#8659; Export PDF</button>
       </div>
     </div>`;
   stepsPane.appendChild(div);
@@ -1110,4 +1111,59 @@ async function generateLinkedIn() {
     'linkedinCard', 'LinkedIn Profile', 'linkedinBody',
     [{ role: 'user', content: pLinkedIn(resume, jd) }]
   );
+}
+
+// ── PDF export ───────────────────────────────────────────────────────────────
+
+function pOnePage(resume, jd) {
+  return `You are a professional resume editor. Your job is to ensure the resume below fills exactly one US Letter page.
+
+At 10.5pt font / 1.4 line-height with 0.65" top-bottom margins and 0.85" side margins, one page fits roughly:
+- 45–58 lines of body content (bullets + role headers + dates)
+- 400–560 words total
+
+Resume:
+${resume}
+${jd ? `\nTarget role (use for context when adding bullets):\n${jd}` : ''}
+
+Rules:
+1. If the resume is LIGHT (under 40 content lines or under 380 words): Add 2–5 achievement bullets to the most relevant roles using XYZ or CAR format. Ground each bullet in the existing experience context — do not invent company names, titles, or specific numbers not implied by the existing content.
+2. If the resume is DENSE (over 58 content lines or over 580 words): Tighten the 3–5 wordiest bullets to under 14 words each. Remove filler adjectives.
+3. If it is already in range: Return it unchanged.
+
+Output the complete adjusted resume inside <resume>…</resume> tags. Preserve all section headers, company names, titles, and dates exactly as they appear.`;
+}
+
+async function exportPDF() {
+  const resume = _finalResume || redact(getResumeText());
+  const jd     = _state.jd   || jdEl.value.trim();
+  if (!resume) { alert('Please add your resume first.'); return; }
+
+  const btn = document.getElementById('exportPdfBtn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Fitting…'; }
+
+  try {
+    const fitted = extractResume(await callClaude(
+      [{ role: 'user', content: pOnePage(resume, jd) }],
+      () => {}
+    ));
+
+    const frame = document.getElementById('printFrame');
+    frame.innerHTML = renderMarkdown(fitted || resume);
+
+    // Tag name and contact lines for centered print styling
+    const allEls = frame.querySelectorAll('h2,h3,h4,.r-line,.r-bullet');
+    if (allEls.length > 0) {
+      allEls[0].classList.add('pr-name');
+      if (allEls[1] && /[@|·•()]/.test(allEls[1].textContent)) {
+        allEls[1].classList.add('pr-contact');
+      }
+    }
+
+    window.print();
+  } catch (err) {
+    alert(`Export failed: ${err.message}`);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '&#8659; Export PDF'; }
+  }
 }
