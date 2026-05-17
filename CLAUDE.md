@@ -60,13 +60,17 @@ All pipeline prompts enforce: same bullet count per role as input — rewrite to
 
 ### Post-pipeline features
 
-**Voice field** — collapsible via `toggleVoice()`, collapsed by default. `#voiceToggle` / `#voiceInner`.
+**Layout** — No left panel. Top section (`.top-section`) has two equal `.input-card` columns (Resume left, JD right) plus a `.actions-row` with three buttons: `.act-primary` (Run Pipeline, `id="runBtn"`), `.act-btn` (`id="quickCoverBtn"`), `.act-btn` (`id="quickInterviewBtn"`). Below: `.steps-pane` (`id="stepsPane"`) is always in the DOM and fills remaining height — empty state, step cards, and final card all render here. `buildUI()` clears `stepsPane.innerHTML` and appends step cards directly; `showFinal()` appends the final card to `stepsPane`.
 
-**Step UI** — Each step in the `STEPS` array has `tag` and `tagCls` fields rendered as colored framework badges in `buildUI()`. `setStatus()` swaps the number circle to a checkmark SVG (`CHECK_SVG`) on done, restores it on retry/error. A CSS `::after` spinning ring animates the circle when running. Header progress uses labeled `.hp-step` + `.hp-connector` structure; `:has()` CSS colors labels by dot state.
+**Voice field** — collapsible toggle inside the Resume input card body. `#voiceToggle` / `#voiceInner`.
+
+**Step UI** — Each step in the `STEPS` array has `tag` and `tagCls` fields rendered as colored framework badges in `buildUI()`. Tag classes: `tag-blue` (RISEN), `tag-blue` (XYZ), `tag-teal` (Keyword Gap), `tag-orange` (CAR), `tag-pink` (Recruiter), `tag-green` (ATS Score). `setStatus()` swaps the number circle to a checkmark SVG (`CHECK_SVG`) on done, restores it on retry/error. A CSS `::after` spinning ring animates the circle when running. Header progress uses labeled `.hp-step` + `.hp-connector` structure; `:has()` CSS colors labels by dot state.
+
+**Color theme** — Midnight Gold: near-black charcoal backgrounds (`--bg: #09090c`), amber/gold accent (`--accent: #f59e0b`, `--accent2: #fcd34d`, `--accent3: #d97706`), emerald green kept only for success states (`--success: #34d399`). All CSS custom properties in `:root` — no hardcoded color values outside the tag badge classes.
 
 **Diff view** — `computeLineDiff(a, b)` runs an LCS DP on both resumes split into lines, producing `{ type: 'same'|'added'|'removed', text }` entries. `renderDiffView()` renders two side-by-side panels: left shows original (removed lines in red), right shows optimized (added lines in green). `toggleDiff()` switches `#resumeView` / `#diffView` visibility and toggles `.active` on `#diffBtn`.
 
-**Cover letter / Interview prep** — `_streamToOutputCard(cardId, title, bodyId, messages)` is a shared helper that creates an `.output-card` in `stepsPane`, streams a `callClaude()` response into it, and disables all `.action-btn, .quick-btn` elements during generation. `generateCoverLetter()` and `generateInterviewPrep()` are available both as `.quick-btn` in the left panel (always accessible) and as `.action-btn` in the final card (post-pipeline). Both resolve the resume as `_finalResume || redact(getResumeText())` and JD as `_state.jd || jdEl.value.trim()` — the pipeline is not required.
+**Cover letter / Interview prep** — `_streamToOutputCard(cardId, title, bodyId, messages)` creates an `.output-card` in `stepsPane`, streams a `callClaude()` response into it, and disables all `.action-btn, .act-primary, .act-btn` elements during generation. `generateCoverLetter()` and `generateInterviewPrep()` are triggered from the action bar (always accessible) or from the final card. Both resolve the resume as `_finalResume || redact(getResumeText())` and JD as `_state.jd || jdEl.value.trim()` — the pipeline is not required.
 
 ## Environment
 

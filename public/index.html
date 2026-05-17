@@ -11,25 +11,25 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:          #0d0c12;
-      --surface:     #131219;
-      --surface2:    #1a1925;
-      --surface3:    #222132;
-      --border:      #252338;
-      --border2:     #312f46;
-      --text:        #eeeef6;
-      --text2:       #9a98b4;
-      --muted:       #56547a;
-      --accent:      #8b5cf6;
-      --accent2:     #a78bfa;
-      --accent3:     #7c3aed;
-      --accent-dim:  #2e1d5e;
-      --accent-glow: rgba(139,92,246,0.16);
-      --success:     #2dd4a0;
-      --success-dim: #0b2820;
-      --error:       #fb7185;
-      --error-dim:   #2d0f18;
-      --warning:     #fbbf24;
+      --bg:          #09090c;
+      --surface:     #111114;
+      --surface2:    #18181d;
+      --surface3:    #1f1f26;
+      --border:      #252530;
+      --border2:     #2d2d3a;
+      --text:        #f5f5ef;
+      --text2:       #9898a4;
+      --muted:       #56566a;
+      --accent:      #f59e0b;
+      --accent2:     #fcd34d;
+      --accent3:     #d97706;
+      --accent-dim:  #271d08;
+      --accent-glow: rgba(245,158,11,0.15);
+      --success:     #34d399;
+      --success-dim: #073022;
+      --error:       #f87171;
+      --error-dim:   #2d0f0f;
+      --warning:     #f59e0b;
       --radius-sm:   6px;
       --radius:      10px;
       --radius-lg:   14px;
@@ -55,7 +55,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: linear-gradient(90deg, #0d0c12 0%, #130f22 50%, #0d0c12 100%);
+      background: linear-gradient(90deg, #09090c 0%, #14100a 50%, #09090c 100%);
       border-bottom: 1px solid var(--border);
       position: relative;
       z-index: 10;
@@ -64,7 +64,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse 60% 100% at 50% 0%, rgba(139,92,246,0.08) 0%, transparent 100%);
+      background: radial-gradient(ellipse 60% 100% at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 100%);
       pointer-events: none;
     }
 
@@ -74,7 +74,7 @@
       background: linear-gradient(135deg, var(--accent3), var(--accent2));
       border-radius: var(--radius-sm);
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 2px 10px rgba(139,92,246,0.4);
+      box-shadow: 0 2px 10px rgba(245,158,11,0.4);
     }
     .header-icon svg { color: #fff; }
     .header-brand { display: flex; flex-direction: column; gap: 1px; }
@@ -113,75 +113,63 @@
     }
     @keyframes hpulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-    /* ── Layout ───────────────────────────────────────────────────────── */
-    .layout { display: flex; flex: 1; overflow: hidden; }
-
-    /* ── Left panel ───────────────────────────────────────────────────── */
-    .inputs {
-      width: 360px; flex-shrink: 0;
-      border-right: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      overflow-y: auto;
+    /* ── Top section ─────────────────────────────────────────────────── */
+    .top-section {
+      flex-shrink: 0;
+      padding: 12px 16px 10px;
+      display: flex; flex-direction: column; gap: 10px;
       background: var(--surface);
-    }
-
-    .panel-section {
-      padding: 14px 16px;
       border-bottom: 1px solid var(--border);
     }
-    .panel-section:last-child { border-bottom: none; }
 
-    .section-label {
+    .inputs-row { display: flex; gap: 10px; }
+
+    .input-card {
+      flex: 1; background: var(--bg);
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      overflow: hidden; display: flex; flex-direction: column;
+    }
+
+    .input-card-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 13px; border-bottom: 1px solid var(--border);
+      background: var(--surface2); flex-shrink: 0;
+    }
+
+    .input-card-label {
       display: flex; align-items: center; gap: 6px;
       font-size: 9.5px; font-weight: 700; text-transform: uppercase;
       letter-spacing: 0.1em; color: var(--muted);
-      margin-bottom: 12px;
     }
-    .section-label svg { opacity: 0.6; }
 
-    /* ── Fields ── */
+    .input-card-body {
+      padding: 10px 12px; display: flex; flex-direction: column; gap: 8px;
+    }
+
+    /* ── Fields (voice / gen-form) ── */
     .field { display: flex; flex-direction: column; gap: 6px; }
-    .field + .field { margin-top: 12px; }
+    .field + .field { margin-top: 8px; }
 
-    .field-label {
-      display: flex; align-items: center; gap: 5px;
-      font-size: 11px; font-weight: 600; color: var(--text2);
-    }
-    .field-label svg { opacity: 0.6; flex-shrink: 0; }
-    .field-label .optional {
-      font-size: 10px; font-weight: 400; color: var(--muted);
-      margin-left: auto;
-    }
-
-    .field textarea {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border2);
-      border-radius: var(--radius);
-      color: var(--text);
-      font-size: 12px;
-      font-family: inherit;
-      padding: 10px 12px;
-      resize: vertical;
-      line-height: 1.6;
+    .field textarea, .input-card-body textarea {
+      width: 100%; background: var(--surface2);
+      border: 1px solid var(--border2); border-radius: var(--radius);
+      color: var(--text); font-size: 12px; font-family: inherit;
+      padding: 10px 12px; resize: vertical; line-height: 1.6;
       transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
     }
-    .field textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
-      background: var(--bg);
+    .field textarea:focus, .input-card-body textarea:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow); background: var(--bg);
     }
-    .field textarea::placeholder { color: var(--muted); font-size: 11.5px; }
+    .field textarea::placeholder, .input-card-body textarea::placeholder {
+      color: var(--muted); font-size: 11.5px;
+    }
 
     /* ── Upload tabs ── */
     .input-tabs {
-      display: flex;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
+      display: flex; background: var(--bg);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
       padding: 3px; gap: 3px;
-      margin-bottom: 8px;
     }
     .input-tab {
       flex: 1; background: transparent; border: none;
@@ -198,13 +186,13 @@
     /* ── Upload zone ── */
     .upload-zone {
       border: 1.5px dashed var(--border2); border-radius: var(--radius);
-      padding: 22px 16px;
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      padding: 14px 12px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
       cursor: pointer; text-align: center;
       transition: border-color 0.2s, background 0.2s;
     }
     .upload-zone:hover, .upload-zone.drag {
-      border-color: var(--accent); background: rgba(139,92,246,0.05);
+      border-color: var(--accent); background: rgba(245,158,11,0.05);
     }
     .upload-icon {
       width: 40px; height: 40px; border-radius: 50%;
@@ -257,113 +245,51 @@
     .voice-inner { display: none; margin-top: 8px; }
     .voice-inner.open { display: block; }
 
-    /* ── Run button ── */
-    .run-btn {
-      width: 100%;
-      background: linear-gradient(135deg, var(--accent3) 0%, var(--accent) 60%, var(--accent2) 100%);
-      background-size: 200% 100%;
-      color: #fff; border: none; border-radius: var(--radius);
-      padding: 13px; font-size: 13px; font-weight: 700; font-family: inherit;
-      cursor: pointer; letter-spacing: 0.01em;
-      box-shadow: 0 2px 16px rgba(139,92,246,0.35);
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      transition: opacity 0.15s, transform 0.12s, box-shadow 0.15s, background-position 0.4s;
-    }
-    .run-btn:hover:not(:disabled) {
-      background-position: 100% 0;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 22px rgba(139,92,246,0.45);
-    }
-    .run-btn:active:not(:disabled) { transform: translateY(0); box-shadow: 0 2px 10px rgba(139,92,246,0.3); }
-    .run-btn:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
+    /* ── Actions row ──────────────────────────────────────────────────── */
+    .actions-row { display: flex; gap: 8px; }
 
-    /* ── Dividers ── */
-    .divider {
+    .act-primary, .act-btn {
       display: flex; align-items: center; gap: 10px;
-      color: var(--muted); font-size: 10.5px; font-weight: 500;
+      padding: 11px 14px; border-radius: var(--radius);
+      cursor: pointer; text-align: left; font-family: inherit;
+      transition: transform 0.12s, box-shadow 0.15s;
     }
-    .divider::before, .divider::after {
-      content: ''; flex: 1; height: 1px; background: var(--border);
+    .act-primary {
+      flex: 1.2;
+      background: linear-gradient(135deg, var(--accent3) 0%, var(--accent) 60%, var(--accent2) 100%);
+      border: none; color: #130e00;
+      box-shadow: 0 2px 14px rgba(245,158,11,0.3);
     }
+    .act-primary:hover:not(:disabled) {
+      transform: translateY(-1px); box-shadow: 0 4px 22px rgba(245,158,11,0.45);
+    }
+    .act-primary:active:not(:disabled) { transform: translateY(0); }
+    .act-primary:disabled { opacity: 0.3; cursor: not-allowed; box-shadow: none; }
+    .act-btn {
+      flex: 1; background: var(--surface2);
+      border: 1px solid var(--border2); color: var(--text);
+    }
+    .act-btn:hover:not(:disabled) {
+      border-color: var(--accent); background: rgba(245,158,11,0.06); transform: translateY(-1px);
+    }
+    .act-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .act-icon {
+      width: 34px; height: 34px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .act-primary .act-icon { background: rgba(0,0,0,0.12); }
+    .act-btn .act-icon { background: var(--surface3); font-size: 15px; }
+    .act-body { flex: 1; min-width: 0; }
+    .act-title { font-size: 12.5px; font-weight: 700; }
+    .act-sub { font-size: 10.5px; margin-top: 2px; }
+    .act-primary .act-sub { color: rgba(0,0,0,0.4); }
+    .act-btn .act-sub { color: var(--muted); }
 
-    /* ── Generate bullets toggle ── */
-    .gen-toggle {
-      width: 100%; background: transparent;
-      border: 1px dashed var(--border2); border-radius: var(--radius);
-      color: var(--muted); font-size: 11.5px; font-weight: 500; font-family: inherit;
-      padding: 9px 12px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-      transition: border-color 0.15s, color 0.15s, background 0.15s;
-    }
-    .gen-toggle:hover { border-color: var(--accent); color: var(--accent2); }
-    .gen-toggle.open  { border-color: var(--accent); color: var(--accent2); border-style: solid; background: rgba(139,92,246,0.04); }
-    .gen-toggle svg   { transition: transform 0.2s; }
-    .gen-toggle.open svg { transform: rotate(45deg); }
-
-    .gen-form {
-      display: none; flex-direction: column; gap: 10px;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 12px; margin-top: 6px;
-    }
-    .gen-form.open { display: flex; }
-    .gen-row { display: flex; gap: 8px; align-items: flex-end; }
-    .gen-count-wrap label {
-      display: block; font-size: 10px; font-weight: 700;
-      color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px;
-    }
-    .gen-count {
-      width: 54px; background: var(--bg); border: 1px solid var(--border2);
-      border-radius: var(--radius-sm); color: var(--text); font-size: 13px; font-family: inherit;
-      font-weight: 600; padding: 7px 8px; text-align: center;
-    }
-    .gen-count:focus { outline: none; border-color: var(--accent); }
-    .gen-btn {
-      flex: 1; background: var(--accent-dim); color: var(--accent2);
-      border: 1px solid rgba(139,92,246,0.4); border-radius: var(--radius-sm);
-      padding: 8px; font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer;
-      transition: opacity 0.15s;
-    }
-    .gen-btn:hover:not(:disabled) { opacity: 0.8; }
-    .gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    /* ── Quick tool cards ── */
-    .tool-cards { display: flex; flex-direction: column; gap: 8px; }
-    .tool-card {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 13px; width: 100%; text-align: left; font-family: inherit;
-      background: var(--surface2); border: 1px solid var(--border2);
-      border-radius: var(--radius); cursor: pointer;
-      transition: border-color 0.15s, background 0.15s, transform 0.12s;
-    }
-    .tool-card:hover:not(:disabled) {
-      border-color: var(--accent); background: rgba(139,92,246,0.07);
-      transform: translateX(2px);
-    }
-    .tool-card:disabled { opacity: 0.4; cursor: not-allowed; }
-    .tool-card-icon {
-      width: 36px; height: 36px; border-radius: var(--radius-sm); flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center; font-size: 17px;
-    }
-    .tool-card-icon.tci-cover     { background: rgba(56,189,248,0.12); }
-    .tool-card-icon.tci-interview { background: rgba(251,146,60,0.12); }
-    .tool-card-body { flex: 1; min-width: 0; }
-    .tool-card-title { font-size: 12.5px; font-weight: 700; color: var(--text); }
-    .tool-card-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
-    .tool-card-arrow {
-      color: var(--muted); flex-shrink: 0;
-      transition: transform 0.15s, color 0.15s;
-    }
-    .tool-card:hover .tool-card-arrow { transform: translateX(3px); color: var(--accent2); }
-
-    /* Keep .quick-btn as alias for JS disabled targeting */
-    .quick-btn { display: none; }
-
-    /* ── Right panel ───────────────────────────────────────────────────── */
-    .pipeline { flex: 1; display: flex; flex-direction: column; min-height: 0; background: var(--bg); }
-
+    /* ── Steps pane (output) ───────────────────────────────────────────── */
     .steps-pane {
-      flex: 1; overflow-y: auto; padding: 16px;
+      flex: 1; overflow-y: auto; padding: 14px 16px;
       display: flex; flex-direction: column; gap: 8px; min-height: 0;
+      background: var(--bg);
     }
 
     /* ── Empty state ── */
@@ -377,7 +303,7 @@
       width: 56px; height: 56px; border-radius: 16px;
       background: linear-gradient(135deg, var(--accent3), var(--accent2));
       display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 14px; box-shadow: 0 4px 20px rgba(139,92,246,0.3);
+      margin: 0 auto 14px; box-shadow: 0 4px 20px rgba(245,158,11,0.3);
     }
     .empty-icon-wrap svg { color: #fff; }
     .empty-hero h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
@@ -419,7 +345,7 @@
     .step-card.running {
       border-color: var(--border2);
       border-left-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(139,92,246,0.15), 0 4px 20px rgba(139,92,246,0.08);
+      box-shadow: 0 0 0 1px rgba(245,158,11,0.15), 0 4px 20px rgba(245,158,11,0.08);
     }
     .step-card.done  { border-left-color: var(--success); }
     .step-card.error { border-left-color: var(--error); }
@@ -461,7 +387,7 @@
       font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
       padding: 2px 8px; border-radius: 20px; flex-shrink: 0;
     }
-    .tag-purple { background: rgba(139,92,246,0.15); color: var(--accent2); border: 1px solid rgba(139,92,246,0.3); }
+    .tag-amber  { background: rgba(251,191,36,0.12); color: #fcd34d; border: 1px solid rgba(251,191,36,0.28); }
     .tag-blue   { background: rgba(56,189,248,0.12);  color: #67d4f8; border: 1px solid rgba(56,189,248,0.25); }
     .tag-teal   { background: rgba(52,211,153,0.12);  color: #5eeab8; border: 1px solid rgba(52,211,153,0.25); }
     .tag-orange { background: rgba(251,146,60,0.12);  color: #fdba74; border: 1px solid rgba(251,146,60,0.25); }
@@ -478,7 +404,7 @@
       white-space: nowrap; transition: all 0.2s;
       display: flex; align-items: center; gap: 4px;
     }
-    .step-card.running .step-badge { color: var(--accent2); border-color: rgba(139,92,246,0.4); background: var(--accent-dim); }
+    .step-card.running .step-badge { color: var(--accent2); border-color: rgba(245,158,11,0.4); background: var(--accent-dim); }
     .step-card.done    .step-badge { color: var(--success);  border-color: rgba(52,211,153,0.3); background: var(--success-dim); }
     .step-card.error   .step-badge { color: var(--error);    border-color: rgba(248,113,113,0.3); background: var(--error-dim); }
 
@@ -505,26 +431,25 @@
     /* ── Final resume card ─────────────────────────────────────────────── */
     .final-card {
       background: var(--surface);
-      border: 1px solid rgba(139,92,246,0.25);
+      border: 1px solid rgba(245,158,11,0.25);
       border-top: 2px solid var(--accent);
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      border-radius: var(--radius-lg);
       overflow: hidden; flex-shrink: 0;
-      margin: 0 16px;
-      box-shadow: 0 -6px 30px rgba(139,92,246,0.08);
+      box-shadow: 0 4px 24px rgba(245,158,11,0.1);
     }
     .final-header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 12px 16px; border-bottom: 1px solid var(--border);
       user-select: none; cursor: pointer;
-      background: linear-gradient(90deg, rgba(139,92,246,0.07) 0%, transparent 100%);
+      background: linear-gradient(90deg, rgba(245,158,11,0.07) 0%, transparent 100%);
     }
-    .final-header:hover { background: linear-gradient(90deg, rgba(139,92,246,0.1) 0%, transparent 100%); }
+    .final-header:hover { background: linear-gradient(90deg, rgba(245,158,11,0.1) 0%, transparent 100%); }
     .final-header-left {
       display: flex; align-items: center; gap: 9px;
     }
     .final-doc-icon {
       width: 28px; height: 28px; border-radius: var(--radius-sm);
-      background: var(--accent-dim); border: 1px solid rgba(139,92,246,0.3);
+      background: var(--accent-dim); border: 1px solid rgba(245,158,11,0.3);
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .final-doc-icon svg { color: var(--accent2); }
@@ -579,7 +504,7 @@
     .score-card {
       display: flex; align-items: center; gap: 24px;
       padding: 14px 20px; border-bottom: 1px solid var(--border);
-      background: linear-gradient(90deg, rgba(139,92,246,0.05) 0%, transparent 80%);
+      background: linear-gradient(90deg, rgba(245,158,11,0.05) 0%, transparent 80%);
     }
     .score-overall { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
     .score-col { text-align: center; }
@@ -691,7 +616,7 @@
     /* ── Spinner ── */
     .spinner {
       display: inline-block; width: 9px; height: 9px;
-      border: 1.5px solid rgba(139,92,246,0.3); border-top-color: var(--accent2);
+      border: 1.5px solid rgba(245,158,11,0.3); border-top-color: var(--accent2);
       border-radius: 50%; animation: spin 0.65s linear infinite;
       vertical-align: middle;
     }
@@ -754,229 +679,169 @@
     </div>
   </header>
 
-  <div class="layout">
+  <!-- ── Top section: inputs + action bar ───────────────────────────── -->
+  <div class="top-section">
+    <div class="inputs-row">
 
-    <!-- ── Left panel ──────────────────────────────────────────────────── -->
-    <div class="inputs">
-
-      <!-- Resume -->
-      <div class="panel-section">
-        <div class="section-label">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-          </svg>
-          Resume
-        </div>
-
-        <div class="input-tabs">
-          <button class="input-tab active" id="tabUpload" onclick="switchTab('upload')">Upload File</button>
-          <button class="input-tab"        id="tabPaste"  onclick="switchTab('paste')">Paste Text</button>
-        </div>
-
-        <div class="tab-panel active" id="panelUpload">
-          <div class="upload-zone" id="uploadZone"
-               onclick="document.getElementById('fileInput').click()"
-               ondragover="handleDragOver(event)"
-               ondragleave="handleDragLeave(event)"
-               ondrop="handleDrop(event)">
-            <input type="file" id="fileInput" accept=".pdf,.docx" hidden onchange="handleFileSelect(event)">
-            <div class="upload-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
-                <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-              </svg>
-            </div>
-            <p><strong>Drop your resume here</strong><br>or click to browse</p>
-            <div class="upload-formats">PDF · DOCX</div>
-          </div>
-          <div class="file-card" id="fileCard">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <!-- Resume card -->
+      <div class="input-card">
+        <div class="input-card-hd">
+          <span class="input-card-label">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
-            <div>
-              <div class="file-name" id="fileName">—</div>
-              <div class="file-size" id="fileSize">—</div>
-            </div>
-            <button class="file-remove" title="Remove file" onclick="clearFile()">&#x2715;</button>
-          </div>
-        </div>
-
-        <div class="tab-panel" id="panelPaste">
-          <div class="field">
-            <textarea id="resume" rows="9" placeholder="Paste your full resume here…"></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- Job Description -->
-      <div class="panel-section">
-        <div class="section-label">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
-          </svg>
-          Job Description
-        </div>
-        <div class="field">
-          <textarea id="jd" rows="9" placeholder="Paste the job description here…"></textarea>
-        </div>
-      </div>
-
-      <!-- Voice preferences (collapsible) -->
-      <div class="panel-section">
-        <button class="voice-toggle" id="voiceToggle" onclick="toggleVoice()">
-          <span style="display:flex;align-items:center;gap:6px">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M12 18.5A6.5 6.5 0 0 1 5.5 12V7a6.5 6.5 0 0 1 13 0v5a6.5 6.5 0 0 1-6.5 6.5z"/>
-              <path d="M12 18.5v3M8 21.5h8"/>
-            </svg>
-            Voice &amp; Preferences
-            <span style="font-weight:400;font-size:10px;color:var(--muted)">(optional)</span>
+            Resume
           </span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="voice-inner" id="voiceInner">
-          <div class="field">
-            <textarea id="voice" rows="3" placeholder="Words to avoid: passionate, synergy&#10;Preferred verbs: shipped, built, led"></textarea>
+          <div class="input-tabs">
+            <button class="input-tab active" id="tabUpload" onclick="switchTab('upload')">Upload</button>
+            <button class="input-tab"        id="tabPaste"  onclick="switchTab('paste')">Paste</button>
           </div>
         </div>
-      </div>
-
-      <!-- Pipeline -->
-      <div class="panel-section">
-        <div class="section-label">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polygon points="5 3 19 12 5 21 5 3"/>
-          </svg>
-          Pipeline
-        </div>
-
-        <button class="run-btn" id="runBtn" onclick="runPipeline()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polygon points="5 3 19 12 5 21 5 3"/>
-          </svg>
-          Run All 6 Steps
-        </button>
-
-        <div class="divider" style="margin-top:12px">or</div>
-
-        <button class="gen-toggle" id="genToggle" onclick="toggleGenForm()" style="margin-top:12px">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          Generate bullets to fill space
-        </button>
-
-        <div class="gen-form" id="genForm">
-          <div class="field">
-            <div class="field-label">Describe the experience</div>
-            <textarea id="genDesc" rows="3" placeholder="e.g. Led migration of legacy PHP monolith to microservices on AWS, team of 4"></textarea>
-          </div>
-          <div class="gen-row">
-            <div class="gen-count-wrap">
-              <label>Count</label>
-              <input class="gen-count" id="genCount" type="number" min="1" max="8" value="3">
+        <div class="input-card-body">
+          <div class="tab-panel active" id="panelUpload">
+            <div class="upload-zone" id="uploadZone"
+                 onclick="document.getElementById('fileInput').click()"
+                 ondragover="handleDragOver(event)"
+                 ondragleave="handleDragLeave(event)"
+                 ondrop="handleDrop(event)">
+              <input type="file" id="fileInput" accept=".pdf,.docx" hidden onchange="handleFileSelect(event)">
+              <div class="upload-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                  <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+              </div>
+              <p><strong>Drop resume here</strong> or click to browse</p>
+              <div class="upload-formats">PDF · DOCX</div>
             </div>
-            <button class="gen-btn" id="genBtn" onclick="generateBullets()">Generate</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Generate -->
-      <div class="panel-section">
-        <div class="section-label">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
-          </svg>
-          Quick Generate
-          <span style="font-weight:400;text-transform:none;font-size:10px;margin-left:auto;color:var(--muted)">no pipeline needed</span>
-        </div>
-        <div class="tool-cards">
-          <button class="tool-card" id="quickCoverBtn" onclick="generateCoverLetter()">
-            <div class="tool-card-icon tci-cover">✉</div>
-            <div class="tool-card-body">
-              <div class="tool-card-title">Cover Letter</div>
-              <div class="tool-card-desc">AI-tailored 3-paragraph letter matching your resume to the JD</div>
-            </div>
-            <svg class="tool-card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-          <button class="tool-card" id="quickInterviewBtn" onclick="generateInterviewPrep()">
-            <div class="tool-card-icon tci-interview">🎯</div>
-            <div class="tool-card-body">
-              <div class="tool-card-title">Interview Prep</div>
-              <div class="tool-card-desc">8 questions with STAR talking points based on your resume + role</div>
-            </div>
-            <svg class="tool-card-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-        </div>
-      </div>
-
-    </div><!-- /inputs -->
-
-    <!-- ── Right panel ──────────────────────────────────────────────────── -->
-    <div class="pipeline" id="pipeline">
-      <div class="steps-pane" id="stepsPane">
-        <div class="empty-state" id="emptyState">
-          <div class="empty-hero">
-            <div class="empty-icon-wrap">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="file-card" id="fileCard">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
-            </div>
-            <h3>Ready to optimize your resume</h3>
-            <p>Upload your resume and paste a job description, then run the 6-step AI pipeline.</p>
-          </div>
-          <div class="empty-grid">
-            <div class="empty-step-card">
-              <div class="empty-step-top">
-                <div class="empty-step-num">1</div>
-                <div class="empty-step-name">RISEN</div>
+              <div>
+                <div class="file-name" id="fileName">—</div>
+                <div class="file-size" id="fileSize">—</div>
               </div>
-              <div class="empty-step-tag" style="background:rgba(139,92,246,0.12);color:#a78bfa;border-color:rgba(139,92,246,0.25)">Rewrite</div>
-              <div class="empty-step-desc">Full 7-step recruiter rewrite</div>
-            </div>
-            <div class="empty-step-card">
-              <div class="empty-step-top">
-                <div class="empty-step-num">2</div>
-                <div class="empty-step-name">XYZ</div>
-              </div>
-              <div class="empty-step-tag" style="background:rgba(56,189,248,0.1);color:#67d4f8;border-color:rgba(56,189,248,0.25)">Bullets</div>
-              <div class="empty-step-desc">Bullet strength optimization</div>
-            </div>
-            <div class="empty-step-card">
-              <div class="empty-step-top">
-                <div class="empty-step-num">3</div>
-                <div class="empty-step-name">Keywords</div>
-              </div>
-              <div class="empty-step-tag" style="background:rgba(52,211,153,0.1);color:#5eeab8;border-color:rgba(52,211,153,0.25)">Gap Fill</div>
-              <div class="empty-step-desc">Audit missing JD keywords</div>
-            </div>
-            <div class="empty-step-card">
-              <div class="empty-step-top">
-                <div class="empty-step-num">4</div>
-                <div class="empty-step-name">CAR</div>
-              </div>
-              <div class="empty-step-tag" style="background:rgba(251,146,60,0.1);color:#fdba74;border-color:rgba(251,146,60,0.25)">Stories</div>
-              <div class="empty-step-desc">Compress narrative bullets</div>
-            </div>
-            <div class="empty-step-card">
-              <div class="empty-step-top">
-                <div class="empty-step-num">5</div>
-                <div class="empty-step-name">Review</div>
-              </div>
-              <div class="empty-step-tag" style="background:rgba(236,72,153,0.1);color:#f0abcb;border-color:rgba(236,72,153,0.25)">Critique</div>
-              <div class="empty-step-desc">7-sec screener + self-critique</div>
-            </div>
-            <div class="empty-step-card">
-              <div class="empty-step-top">
-                <div class="empty-step-num">6</div>
-                <div class="empty-step-name">ATS Score</div>
-              </div>
-              <div class="empty-step-tag" style="background:rgba(52,211,153,0.1);color:#34d399;border-color:rgba(52,211,153,0.25)">Score</div>
-              <div class="empty-step-desc">Before / after ATS scorecard</div>
+              <button class="file-remove" title="Remove file" onclick="clearFile()">&#x2715;</button>
             </div>
           </div>
+          <div class="tab-panel" id="panelPaste">
+            <textarea id="resume" rows="6" placeholder="Paste your full resume here…"></textarea>
+          </div>
+          <button class="voice-toggle" id="voiceToggle" onclick="toggleVoice()">
+            <span style="display:flex;align-items:center;gap:6px">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 18.5A6.5 6.5 0 0 1 5.5 12V7a6.5 6.5 0 0 1 13 0v5a6.5 6.5 0 0 1-6.5 6.5z"/>
+                <path d="M12 18.5v3M8 21.5h8"/>
+              </svg>
+              Voice &amp; Preferences
+              <span style="font-weight:400;font-size:10px;color:var(--muted)">(optional)</span>
+            </span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="voice-inner" id="voiceInner">
+            <div class="field">
+              <textarea id="voice" rows="2" placeholder="Words to avoid: passionate, synergy&#10;Preferred verbs: shipped, built, led"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Job Description card -->
+      <div class="input-card">
+        <div class="input-card-hd">
+          <span class="input-card-label">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+            </svg>
+            Job Description
+          </span>
+        </div>
+        <div class="input-card-body">
+          <textarea id="jd" rows="9" style="resize:none" placeholder="Paste the job description here…"></textarea>
+        </div>
+      </div>
+
+    </div><!-- /inputs-row -->
+
+    <!-- Action buttons -->
+    <div class="actions-row">
+      <button class="act-primary" id="runBtn" onclick="runPipeline()">
+        <div class="act-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+        </div>
+        <div class="act-body">
+          <div class="act-title">Run Pipeline</div>
+          <div class="act-sub">Full 6-step ATS optimization</div>
+        </div>
+      </button>
+
+      <button class="act-btn" id="quickCoverBtn" onclick="generateCoverLetter()">
+        <div class="act-icon">✉</div>
+        <div class="act-body">
+          <div class="act-title">Cover Letter</div>
+          <div class="act-sub">Tailored 3-paragraph letter</div>
+        </div>
+      </button>
+
+      <button class="act-btn" id="quickInterviewBtn" onclick="generateInterviewPrep()">
+        <div class="act-icon">🎯</div>
+        <div class="act-body">
+          <div class="act-title">Interview Prep</div>
+          <div class="act-sub">8 targeted questions</div>
+        </div>
+      </button>
+    </div>
+
+  </div><!-- /top-section -->
+
+  <!-- ── Output: pipeline steps + results ────────────────────────────── -->
+  <div class="steps-pane" id="stepsPane">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-hero">
+        <div class="empty-icon-wrap">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <h3>Ready to optimize your resume</h3>
+        <p>Upload your resume and paste a job description, then choose an action above.</p>
+      </div>
+      <div class="empty-grid">
+        <div class="empty-step-card">
+          <div class="empty-step-top"><div class="empty-step-num">1</div><div class="empty-step-name">RISEN</div></div>
+          <div class="empty-step-tag" style="background:rgba(56,189,248,0.12);color:#67d4f8;border-color:rgba(56,189,248,0.25)">Rewrite</div>
+          <div class="empty-step-desc">Full 7-step recruiter rewrite</div>
+        </div>
+        <div class="empty-step-card">
+          <div class="empty-step-top"><div class="empty-step-num">2</div><div class="empty-step-name">XYZ</div></div>
+          <div class="empty-step-tag" style="background:rgba(56,189,248,0.1);color:#67d4f8;border-color:rgba(56,189,248,0.25)">Bullets</div>
+          <div class="empty-step-desc">Bullet strength optimization</div>
+        </div>
+        <div class="empty-step-card">
+          <div class="empty-step-top"><div class="empty-step-num">3</div><div class="empty-step-name">Keywords</div></div>
+          <div class="empty-step-tag" style="background:rgba(52,211,153,0.1);color:#5eeab8;border-color:rgba(52,211,153,0.25)">Gap Fill</div>
+          <div class="empty-step-desc">Audit missing JD keywords</div>
+        </div>
+        <div class="empty-step-card">
+          <div class="empty-step-top"><div class="empty-step-num">4</div><div class="empty-step-name">CAR</div></div>
+          <div class="empty-step-tag" style="background:rgba(251,146,60,0.1);color:#fdba74;border-color:rgba(251,146,60,0.25)">Stories</div>
+          <div class="empty-step-desc">Compress narrative bullets</div>
+        </div>
+        <div class="empty-step-card">
+          <div class="empty-step-top"><div class="empty-step-num">5</div><div class="empty-step-name">Review</div></div>
+          <div class="empty-step-tag" style="background:rgba(236,72,153,0.1);color:#f0abcb;border-color:rgba(236,72,153,0.25)">Critique</div>
+          <div class="empty-step-desc">7-sec screener + self-critique</div>
+        </div>
+        <div class="empty-step-card">
+          <div class="empty-step-top"><div class="empty-step-num">6</div><div class="empty-step-name">ATS Score</div></div>
+          <div class="empty-step-tag" style="background:rgba(52,211,153,0.1);color:#34d399;border-color:rgba(52,211,153,0.25)">Score</div>
+          <div class="empty-step-desc">Before / after ATS scorecard</div>
         </div>
       </div>
     </div>
-
-  </div><!-- /layout -->
+  </div>
 
   <script src="app.js"></script>
 </body>

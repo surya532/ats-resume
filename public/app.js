@@ -210,7 +210,7 @@ function copyBullet(btn, index) {
 // ── Step UI ──────────────────────────────────────────────────────────────────
 
 const STEPS = [
-  { id: 'risen',       num: 1, name: 'RISEN',            sub: 'Full resume rewrite',              tag: 'Rewrite',  tagCls: 'tag-purple' },
+  { id: 'risen',       num: 1, name: 'RISEN',            sub: 'Full resume rewrite',              tag: 'Rewrite',  tagCls: 'tag-blue'   },
   { id: 'xyz',         num: 2, name: 'XYZ',              sub: 'Bullet optimization',              tag: 'Bullets',  tagCls: 'tag-blue'   },
   { id: 'keyword-gap', num: 3, name: 'Keyword Gap',      sub: 'Audit + fill (2 passes)',          tag: 'Keywords', tagCls: 'tag-teal'   },
   { id: 'car',         num: 4, name: 'CAR',              sub: 'Story compression',                tag: 'Stories',  tagCls: 'tag-orange' },
@@ -219,15 +219,9 @@ const STEPS = [
 ];
 
 function buildUI() {
-  const pipeline = document.getElementById('pipeline');
   document.getElementById('emptyState')?.remove();
-  pipeline.innerHTML = '';
-
-  // Steps go into their own scrollable pane
-  const stepsPane = document.createElement('div');
-  stepsPane.id = 'stepsPane';
-  stepsPane.className = 'steps-pane';
-  pipeline.appendChild(stepsPane);
+  const stepsPane = document.getElementById('stepsPane');
+  stepsPane.innerHTML = '';
 
   for (const s of STEPS) {
     const card = document.createElement('div');
@@ -688,7 +682,7 @@ async function _execute(startIdx, initialCur) {
   const { safeResume, voice, jd } = _state;
   const btn = document.getElementById('runBtn');
   btn.disabled = true;
-  btn.textContent = 'Running…';
+  btn.innerHTML = '<span class="spinner"></span> Running…';
 
   let cur = initialCur;
 
@@ -786,7 +780,7 @@ async function _execute(startIdx, initialCur) {
     }
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Run All 6 Steps';
+    btn.innerHTML = '<div class="act-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"/></svg></div><div class="act-body"><div class="act-title">Run Pipeline</div><div class="act-sub">Full 6-step ATS optimization</div></div>';
   }
 }
 
@@ -843,7 +837,7 @@ function renderScoreCard(scores) {
 function showFinal(text, scores) {
   _finalResume = text;
 
-  const pipeline = document.getElementById('pipeline');
+  const stepsPane = document.getElementById('stepsPane');
 
   // Collapse all completed steps — user can re-expand any individually
   document.querySelectorAll('.step-card.done').forEach(card => card.classList.remove('open'));
@@ -883,7 +877,7 @@ function showFinal(text, scores) {
         <button class="action-btn" onclick="generateInterviewPrep()">&#127919; Interview Prep</button>
       </div>
     </div>`;
-  pipeline.appendChild(div);
+  stepsPane.appendChild(div);
   document.getElementById('copyFinalBtn').onclick = (e) => {
     e.stopPropagation();
     navigator.clipboard.writeText(text).then(() => {
@@ -1017,8 +1011,6 @@ ${jd}`;
 
 async function _streamToOutputCard(cardId, title, bodyId, messages) {
   const stepsPane = document.getElementById('stepsPane');
-  if (!stepsPane) { alert('Run the pipeline first.'); return; }
-
   document.getElementById(cardId)?.remove();
   const card = document.createElement('div');
   card.className = 'output-card';
@@ -1032,7 +1024,7 @@ async function _streamToOutputCard(cardId, title, bodyId, messages) {
   stepsPane.appendChild(card);
   stepsPane.scrollTo({ top: stepsPane.scrollHeight, behavior: 'smooth' });
 
-  const genBtns = document.querySelectorAll('.action-btn, .tool-card');
+  const genBtns = document.querySelectorAll('.action-btn, .act-primary, .act-btn');
   genBtns.forEach(b => b.disabled = true);
 
   try {
@@ -1051,7 +1043,7 @@ async function _streamToOutputCard(cardId, title, bodyId, messages) {
     const bodyEl = document.getElementById(bodyId);
     if (bodyEl) bodyEl.textContent += `\n\nError: ${err.message}`;
   } finally {
-    genBtns.forEach(b => b.disabled = false);
+    genBtns.forEach(b => { b.disabled = false; });
   }
 }
 
