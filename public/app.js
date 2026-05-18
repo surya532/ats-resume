@@ -897,6 +897,7 @@ function showFinal(text, scores) {
         <button class="action-btn" onclick="generateCoverLetter()">✉ Cover Letter</button>
         <button class="action-btn" onclick="generateInterviewPrep()">&#127919; Interview Prep</button>
         <button class="action-btn" onclick="generateLinkedIn()">in LinkedIn</button>
+        <button class="action-btn" onclick="generateIcanIntro()">🎤 Introduction</button>
         <button class="action-btn" id="exportPdfBtn" onclick="exportPDF()">&#8659; Export PDF</button>
       </div>
     </div>`;
@@ -1131,6 +1132,51 @@ async function generateLinkedIn() {
   await _streamToOutputCard(
     'linkedinCard', 'LinkedIn Profile', 'linkedinBody',
     [{ role: 'user', content: pLinkedIn(resume, jd) }]
+  );
+}
+
+// ── ICAN Introduction ────────────────────────────────────────────────────────
+
+function pIcanIntro(resume, jd) {
+  return `You are an executive career coach who specialises in crafting sharp, memorable professional introductions used in interviews, networking events, and elevator pitches.
+
+Resume:
+${resume}
+
+Target job description:
+${jd}
+
+Write an ICAN Introduction tailored to this specific role. ICAN stands for:
+
+**I — Introduction**
+Who you are: current/most recent title, industry, and years of experience. One confident sentence that frames your career identity. Not "I am passionate about" — lead with what you DO and at what level.
+
+**C — Career & Achievement**
+2–3 standout career achievements with concrete metrics from the resume. Choose the achievements most relevant to the target JD. Use tight, active phrasing. No more than 4 sentences total.
+
+**A — Attributes & Skills**
+3–4 core strengths or skills that make you the right fit for this role specifically. Ground each one in a brief example or context from your resume. Not a laundry list — curated and targeted.
+
+**N — Next**
+What you're seeking next and why this role/company excites you. Show you've read the JD: reference 1–2 specific things about the role or team. Close with a forward-looking, confident sentence — not "I'm looking for a new opportunity."
+
+---
+
+Format the output with the four section headers bolded (## I — Introduction, ## C — Career & Achievement, ## A — Attributes & Skills, ## N — Next). Write in first person. Aim for 200–280 words total — tight enough to deliver in 90 seconds. No filler phrases, no buzzwords.
+
+Also write a **one-sentence elevator version** (under 30 words) at the end, labeled "## 30-Second Version".
+
+Use only information present in the resume. Do not invent titles, companies, or metrics.`;
+}
+
+async function generateIcanIntro() {
+  const resume = _finalResume || redact(getResumeText());
+  const jd     = _state.jd   || jdEl.value.trim();
+  if (!resume) { alert('Please upload a resume or paste your resume text.'); return; }
+  if (!jd)     { alert('Please paste the job description.'); return; }
+  await _streamToOutputCard(
+    'icanCard', 'ICAN Introduction', 'icanBody',
+    [{ role: 'user', content: pIcanIntro(resume, jd) }]
   );
 }
 

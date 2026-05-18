@@ -54,6 +54,7 @@ All prompt functions in `app.js` prefixed with `p`:
 | `pCoverLetter` | — | 3-paragraph tailored cover letter, 200–250 words, no filler phrases |
 | `pInterviewPrep` | — | 8 questions with talking points (behavioral, technical, deep-dive, why-us) |
 | `pLinkedIn` | — | LinkedIn About (~1500 chars, 3 paras) + 3 headline variants (role-targeted, achievement-led, broad identity) |
+| `pIcanIntro` | ICAN | 200–280 word professional introduction: Introduction, Career & Achievement, Attributes & Skills, Next — plus a 30-second elevator version |
 | `pOnePage` | — | Ensures resume fills exactly 1 page: adds XYZ/CAR bullets to light resumes, tightens wordiest bullets on dense ones |
 
 Each pipeline prompt instructs the model to wrap resume output in `<resume>…</resume>` tags. `extractResume()` parses those tags; falls back to full text if absent.
@@ -62,7 +63,7 @@ All pipeline prompts enforce: same bullet count per role as input — rewrite to
 
 ### Post-pipeline features
 
-**Layout** — No left panel. Top section (`.top-section`) has two equal `.input-card` columns (Resume left, JD right) plus a `.actions-row` with three buttons: `.act-primary` (Run Pipeline, `id="runBtn"`), `.act-btn` (`id="quickCoverBtn"`), `.act-btn` (`id="quickInterviewBtn"`). Below: `.steps-pane` (`id="stepsPane"`) is always in the DOM and fills remaining height — empty state, step cards, and final card all render here. `buildUI()` clears `stepsPane.innerHTML` and appends step cards directly; `showFinal()` appends the final card to `stepsPane`.
+**Layout** — No left panel. Top section (`.top-section`) has two equal `.input-card` columns (Resume left, JD right) plus a `.actions-row` with buttons: `.act-primary` (Run Pipeline, `id="runBtn"`), `.act-btn` (`id="quickCoverBtn"`), `.act-btn` (`id="quickInterviewBtn"`), `.act-btn` (`id="quickLinkedInBtn"`), `.act-btn` (`id="quickIcanBtn"`). Below: `.steps-pane` (`id="stepsPane"`) is always in the DOM and fills remaining height — empty state, step cards, and final card all render here. `buildUI()` clears `stepsPane.innerHTML` and appends step cards directly; `showFinal()` appends the final card to `stepsPane`.
 
 **Voice field** — collapsible toggle inside the Resume input card body. `#voiceToggle` / `#voiceInner`.
 
@@ -74,7 +75,9 @@ All pipeline prompts enforce: same bullet count per role as input — rewrite to
 
 **PDF export** — `exportPDF()` calls `pOnePage(resume, jd)` via `callClaude()` (no-op stream callback) to ensure the resume fills exactly one US Letter page, then injects the result into `#printFrame` via `renderMarkdown()`, tags the first element `.pr-name` and second `.pr-contact` for centered print styling, and calls `window.print()`. Button is `id="exportPdfBtn"` in the final card `.final-actions` row. `@media print` CSS hides all app chrome and shows only `#printFrame` with a clean professional layout. `@page` rule sets letter size with 0.65" top/bottom and 0.85" side margins.
 
-**Cover letter / Interview prep / LinkedIn** — `_streamToOutputCard(cardId, title, bodyId, messages)` creates an `.output-card` in `stepsPane`, streams a `callClaude()` response into it, and disables all `.action-btn, .act-primary, .act-btn` elements during generation. `generateCoverLetter()`, `generateInterviewPrep()`, and `generateLinkedIn()` are triggered from the action bar (always accessible, `id="quickCoverBtn"` / `id="quickInterviewBtn"` / `id="quickLinkedInBtn"`) or from the final card. All three resolve the resume as `_finalResume || redact(getResumeText())` and JD as `_state.jd || jdEl.value.trim()` — the pipeline is not required.
+**Cover letter / Interview prep / LinkedIn / ICAN Introduction** — `_streamToOutputCard(cardId, title, bodyId, messages)` creates an `.output-card` in `stepsPane`, streams a `callClaude()` response into it, and disables all `.action-btn, .act-primary, .act-btn` elements during generation. `generateCoverLetter()`, `generateInterviewPrep()`, `generateLinkedIn()`, and `generateIcanIntro()` are triggered from the action bar (always accessible) or from the final card. All four resolve the resume as `_finalResume || redact(getResumeText())` and JD as `_state.jd || jdEl.value.trim()` — the pipeline is not required.
+
+**ICAN Introduction** — `generateIcanIntro()` / `pIcanIntro(resume, jd)`. Generates a structured 200–280 word spoken/written introduction using the ICAN framework: **I**ntroduction (career identity), **C**areer & Achievement (2–3 metrics-driven highlights), **A**ttributes & Skills (3–4 targeted strengths), **N**ext (what you want and why this role). Also outputs a "30-Second Version" — a single sub-30-word elevator sentence. Button: `id="quickIcanBtn"` in the action bar; also in the final card actions row.
 
 ## Environment
 

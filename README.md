@@ -85,6 +85,19 @@ The browser's Save as PDF dialog opens with a clean professional layout — name
 
 Click **LinkedIn** — available in the action bar at any time, or below the final resume after the pipeline runs. Generates a LinkedIn About section (~1500 characters, 3 paragraphs) and 3 headline variants with different angles: role-targeted, achievement-led, and broad career identity. If the pipeline has run, uses the optimized resume; otherwise uses the raw resume.
 
+### ICAN Introduction
+
+Click **Introduction** — available in the action bar at any time, or below the final resume after the pipeline runs. Generates a structured professional introduction using the ICAN framework:
+
+- **I — Introduction**: One-sentence career identity (who you are, your level, your field)
+- **C — Career & Achievement**: 2–3 standout accomplishments with metrics, matched to the JD
+- **A — Attributes & Skills**: 3–4 core strengths grounded in resume evidence, targeted to the role
+- **N — Next**: What you're looking for and why this specific role excites you
+
+Output is 200–280 words — tight enough to deliver verbally in 90 seconds. Also includes a **30-Second Version**: a single elevator-pitch sentence under 30 words.
+
+Use it for interviews, networking events, LinkedIn messages, or "tell me about yourself" moments.
+
 ### Generate bullets
 
 Click **Generate bullets to fill space** to create XYZ/CAR-formatted bullets for any experience you describe. Each bullet has its own copy button.
